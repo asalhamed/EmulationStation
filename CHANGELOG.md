@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### M4 — Templated config generation
+- `Render-Template`: simple `{{TOKEN}}` substitution helper. XML-escapes by default; `-NoXmlEscape` for INI/plain. Unknown tokens left literal so un-substituted placeholders are visible.
+- `Write-EsSystems`: renders `es_systems.cfg` directly from `EmulatorSystem[]`. One `<system>` block per system. Libretro command = `"<retroarch.exe>" -L "<core.dll>" %ROM%`; Standalone command = manifest's `CommandTemplate` with `%EXE%` substituted. `%ROM%`/`%ROM_RAW%` preserved for ES runtime substitution. Output validated as well-formed XML before write.
+- `Write-EsSettings`: renders `es_settings.cfg` with one `{{USERPROFILE}}` substitution (forward-slashed paths for the slideshow keys). Format is XML-ish but multi-rooted (matches upstream + what ES expects), so no XmlDocument validation.
+- Templates at `src/templates/`:
+  - `es_systems.cfg.system-block.template` — one system's XML block.
+  - `es_settings.cfg.template` — verbatim port of upstream's es_settings (40 settings).
+  - `dolphin.ini.template` — verbatim port of upstream's 200-line Dolphin config, with `$env:userprofile` replaced by `{{USERPROFILE}}`.
+- 14 new unit tests (5 Render-Template + 6 Write-EsSystems + 3 Write-EsSettings).
+- Closes upstream defects #10 (GUI-driven config bootstrap), #15 (60s sleep loops), #20 (es_systems.cfg heredoc), #21 (dolphin.ini heredoc).
+
 ### M3 — System data model
 - Schema v1 for `manifest/systems.psd1` and `manifest/downloads.psd1` with strict validation: regex constraints on names, enum values for kinds, polymorphic `Launcher` (Libretro vs Standalone), cross-manifest artifact resolution.
 - `Resolve-Manifest` rewritten — takes `-ManifestRoot` (directory), reads both PSD1s, returns typed `EmulatorSystem[]` and `DownloadSpec[]`. Throws with file:path-style messages on the first violation.

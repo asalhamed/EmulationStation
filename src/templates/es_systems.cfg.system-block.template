@@ -1,0 +1,9 @@
+    <system>
+        <name>{{NAME}}</name>
+        <fullname>{{FULLNAME}}</fullname>
+        <path>{{PATH}}</path>
+        <extension>{{EXTENSION}}</extension>
+        <command>{{COMMAND}}</command>
+        <platform>{{PLATFORM}}</platform>
+        <theme>{{THEME}}</theme>
+    </system>
