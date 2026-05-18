@@ -2,7 +2,10 @@
 [CmdletBinding()]
 param(
     [ValidateSet('All', 'Unit', 'Integration', 'Smoke')]
-    [string] $Scope = 'All'
+    [string] $Scope = 'All',
+
+    # Opt-in: include tests tagged 'Network' that hit the real internet.
+    [switch] $IncludeNetwork
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,8 +31,12 @@ $paths = switch ($Scope) {
 }
 
 $config = New-PesterConfiguration
-$config.Run.Path = $paths
-$config.Run.Exit = $true
+$config.Run.Path         = $paths
+$config.Run.Exit         = $true
 $config.Output.Verbosity = 'Detailed'
+
+if (-not $IncludeNetwork) {
+    $config.Filter.ExcludeTag = 'Network'
+}
 
 Invoke-Pester -Configuration $config
