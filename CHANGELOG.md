@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### M3 — System data model
+- Schema v1 for `manifest/systems.psd1` and `manifest/downloads.psd1` with strict validation: regex constraints on names, enum values for kinds, polymorphic `Launcher` (Libretro vs Standalone), cross-manifest artifact resolution.
+- `Resolve-Manifest` rewritten — takes `-ManifestRoot` (directory), reads both PSD1s, returns typed `EmulatorSystem[]` and `DownloadSpec[]`. Throws with file:path-style messages on the first violation.
+- New types: `LauncherKind`, `DownloadKind`, `EmulatorSystem`, `DownloadSpec`.
+- `manifest/packages.psd1` removed; pinning folded into per-system `Packages = @(@{Id; Version})` shape (also accepts bare strings for unpinned).
+- 15 new unit tests covering every validation rule + 2 for `Get-EmulationStationManifest` against the shipped manifest. Total grows from 50 to 60+ green.
+- Closes upstream defects #18 (copy-paste install logic — schema enables generic loop in M6), #20 (es_systems.cfg heredoc — manifest now source of truth), #23 partial (per-system opt-in is now natural).
+
 ### M2 — winget package installer
 - `Invoke-WinGet`: single chokepoint that shells out to winget.exe via `Start-Process` with redirected stdout/stderr; throws on non-zero exit with stderr context. Optional `-ParseJson` (for verbs that support it).
 - `Install-WinGetPackage`: idempotent — query first via `Find-WinGetInstalledPackage`, install/upgrade only if needed. Returns typed status. Supports `-UserScope`, `-Version`, `ShouldProcess`.

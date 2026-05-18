@@ -4,6 +4,38 @@ enum PreflightStatus {
     Warn
 }
 
+enum LauncherKind {
+    Libretro
+    Standalone
+}
+
+enum DownloadKind {
+    LibretroCore
+    Rom
+    Theme
+    EmulatorAsset
+}
+
+class EmulatorSystem {
+    [string]    $Name
+    [string]    $FullName
+    [string]    $Platform
+    [string]    $Theme
+    [string[]]  $RomExtensions
+    [string]    $Notes
+    [hashtable] $Launcher
+    [object[]]  $Packages
+    [hashtable] $Artifacts
+}
+
+class DownloadSpec {
+    [string]       $Id
+    [string]       $Url
+    [string]       $Sha256
+    [DownloadKind] $Kind
+    [string]       $System
+}
+
 class PreflightCheck {
     [string] $Name
     [PreflightStatus] $Status
