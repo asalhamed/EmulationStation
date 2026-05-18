@@ -1,0 +1,27 @@
+# PowerShell
+*.bak
+*.tmp
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Test artifacts
+TestResults*.xml
+coverage.xml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Downloaded artifacts (verified at runtime, never committed)
+download-cache/
+requirements/
+
+# Local install scratch (never commit a real install)
+install-test/
+*.log.jsonl
+
+# Claude harness
+.claude/

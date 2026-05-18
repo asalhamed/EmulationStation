@@ -1,0 +1,166 @@
+{
+	"downloads": [
+		{
+			"file": "WahMunchers-SMS-R2.zip",
+			"url": "https://www.smspower.org/uploads/Homebrew/WahMunchers-SMS-R2.zip"
+		},
+		{
+			"file": "emulationstation_win32_latest.exe",
+			"url": "https://emulationstation.org/downloads/releases/emulationstation_win32_latest.exe"
+		},
+		{
+			"file": "ePSXe205.zip",
+			"url": "http://www.epsxe.com/files/ePSXe205.zip"
+		},
+		{
+			"file": "pcsx2-1.6.0-setup.exe",
+			"url": "https://github.com/PCSX2/pcsx2/releases/download/v1.6.0/pcsx2-1.6.0-setup.exe"
+		},
+		{
+			"file": "RetroArch.7z",
+			"url": "https://buildbot.libretro.com/stable/1.17.0/windows/x86_64/RetroArch.7z"
+		},
+		{
+			"file": "assimilate_full.zip",
+			"url": "http://www.nesworld.com/homebrew/assimilate_full.zip"
+		},
+		{
+			"file": "fceumm_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/fceumm_libretro.dll.zip"
+		},
+		{
+			"file": "mame2010_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/mame2010_libretro.dll.zip"
+		},
+		{
+			"file": "parallel_n64_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/parallel_n64_libretro.dll.zip"
+		},
+		{
+			"file": "pom-twin.zip",
+			"url": "http://www.nesworld.com/n64/homebrew/pom-twin.zip"
+		},
+		{
+			"file": "fbalpha2012_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/fbalpha2012_libretro.dll.zip"
+		},
+		{
+			"file": "uranus0ev_fix.gba",
+			"url": "https://github.com/OpenEmu/OpenEmu-Update/raw/master/Homebrew/GBA/Uranus%20Zero%20EV/uranus0ev_fix.gba"
+		},
+		{
+			"file": "vba_next_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/vba_next_libretro.dll.zip"
+		},
+		{
+			"file": "rickdangerous.gen",
+			"url": "https://github.com/OpenEmu/OpenEmu-Update/raw/master/Homebrew/SG/Rick%20Dangerous/rickdangerous.gen"
+		},
+		{
+			"file": "genesis_plus_gx_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/genesis_plus_gx_libretro.dll.zip"
+		},
+		{
+			"file": "snes9x_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/snes9x_libretro.dll.zip"
+		},
+		{
+			"file": "N-Warp Daisakusen V1.1.smc",
+			"url": "https://github.com/OpenEmu/OpenEmu-Update/raw/master/Homebrew/SNES/N-Warp%20Daisakusen/N-Warp%20Daisakusen%20V1.1.smc"
+		},
+		{
+			"file": "Marilyn_In_the_Magic_World_(010a).7z",
+			"url": "https://raw.githubusercontent.com/PublicDomainRoms/public-domain-roms/master/psx/Marilyn_In_the_Magic_World_(010a).7z"
+		},
+		{
+			"file": "ramless_pong.bin",
+			"url": "https://raw.githubusercontent.com/PublicDomainRoms/public-domain-roms/master/ramless_pong.bin"
+		},
+		{
+			"file": "star_heritage.zip",
+			"url": "http://www.nesworld.com/gbc/homebrew/commercial/star_heritage.zip"
+		},
+		{
+			"file": "gambatte_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/gambatte_libretro.dll.zip"
+		},
+		{
+			"file": "stella_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/stella_libretro.dll.zip"
+		},
+		{
+			"file": "prosystem_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/prosystem_libretro.dll.zip"
+		},
+		{
+			"file": "vice_x64_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/vice_x64_libretro.dll.zip"
+		},
+		{
+			"file": "fmsx_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/fmsx_libretro.dll.zip"
+		},
+		{
+			"file": "puae_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/puae_libretro.dll.zip"
+		},
+		{
+			"file": "race_libretro.dll.zip",
+			"url": "http://buildbot.libretro.com/nightly/windows/x86_64/latest/race_libretro.dll.zip"
+		},
+		{
+			"file": "neopocket.zip",
+			"url": "https://github.com/PublicDomainRoms/public-domain-roms/raw/master/ngp/neopocket.zip"
+		},
+		{
+			"file": "cube.elf",
+			"url": "https://www.ppsspp.org/files/cube.elf"
+		},
+		{
+			"file": "C4.vpk",
+			"url": "https://dl.coolatoms.org/vitadb/C4.vpk"
+		},
+		{
+			"file": "Avoidance_v1.3.pkg",
+			"url": "https://github.com/PublicDomainRoms/public-domain-roms/raw/master/ps3/Avoidance_v1.3.pkg"
+		}
+	],
+	"releases": [
+		{
+			"file": "scraper_windows_amd64.zip",
+			"repo": "sselph/scraper"
+		},
+		{
+			"file": "EmulationStation-Win32.zip",
+			"repo": "Francommit/emulationstation"
+		},
+		{
+			"file": "recalbox-backport-v2.2.zip",
+			"repo": "Francommit/recalbox-backport"
+		},
+		{
+			"file": "ccleste.3dsx",
+			"repo": "lemon-sherbet/ccleste"
+		},
+		{
+			"file": "tetriswitch.nro",
+			"repo": "Ryuzaki-MrL/tetriswitch"
+		},
+		{
+			"file": "windows-latest.zip",
+			"repo": "Vita3K/Vita3K"
+		}
+	],
+	"other_downloads": [
+		{
+			"file": "Homebrew.Channel.-.OHBC.wad",
+			"url": "https://github.com/FIX94/hbc/releases/download/1.1.4-1/Homebrew.Channel.-.OHBC.wad"
+		}
+	],
+	"extra_nes_games": [
+		{
+			"file": "mojontwinsmulticart.zip",
+			"url": "http://www.nesworld.com/homebrew/mojontwinsmulticart.zip"
+		}
+	]
+}
