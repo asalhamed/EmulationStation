@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## v0.1.0 — 2026-05-19
+
+First public cut. All 11 planned milestones (M0–M10) shipped; all 24 defects from `reference/analysis.md` addressed. 108 unit tests, 115 default suite, 117 with `-IncludeNetwork`. 16 systems supported (11 Libretro + 5 Standalone). Install + uninstall are both auditable round-trips.
+
+### M10 — Verification, docs, ship v0.1
+- README rewritten end-to-end: quickstart, supported systems, install pipeline summary, run-the-tests, maintainer flow, layout, known limitations.
+- PLAN.md appended with an Outcomes section: milestone-by-milestone commit list, test totals, defect tally, deferred items.
+- M10 deep plan committed at `docs/plans/M10-verification-ship.md`.
+- v0.1.0 git tag annotated.
 
 ### M9 — Uninstaller (reverse-replay)
 - `Uninstall-EmulationStation` replaces the M0 `NotImplementedException` stub. Walks `install-log.json` Actions[] in reverse, undoing what's undoable: `ShortcutCreated` → delete .lnk, `ConfigRendered` → delete .cfg, `FileWritten` → delete file, `DirectoryCreated` → remove if empty (preserving user-dropped ROMs), `WinGetInstall` → skip by default, opt-in via `-RemoveWinGetPackages`.

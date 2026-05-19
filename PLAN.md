@@ -93,3 +93,48 @@ These are non-negotiable — every PR / milestone must respect them:
 - You review the plan, push back, approve.
 - I implement, with Pester tests landing alongside the code.
 - We mark the milestone done together; I update this file's checklist.
+
+---
+
+## Outcomes (v0.1.0)
+
+All 11 planned milestones shipped:
+
+| | Milestone | Commit |
+|---|---|---|
+| ✅ | M0 — Foundations | `fd34de1` |
+| ✅ | M1 — Verified downloader | `d7a5c5b` |
+| ✅ | M2 — winget package installer + path resolver | `5634899` |
+| ✅ | M3 — System data model | `d5a1e26` |
+| ✅ | M4 — Templated config generation | `39fb704` |
+| ✅ | M5 — NES end-to-end + maintainer hash flow | `33e9b90` |
+| ✅ | M6 — All 11 RetroArch systems | `10fd255` |
+| ✅ | M7 — 5 Standalone emulators (PSX/PS2/PS3/GC/Wii) | `656b8b1` |
+| ✅ | M8 — Install log + shortcuts | `02dce6f` |
+| ✅ | M9 — Uninstaller (reverse-replay) | `d7e54df` |
+| ✅ | M10 — Verification, docs, ship | this commit |
+
+### Defects closed: 24 of 24
+
+Every defect catalogued in `reference/analysis.md` is addressed. See `CHANGELOG.md` for the milestone-by-milestone breakdown.
+
+### Test totals
+
+- **108 unit tests** (default suite, offline, deterministic).
+- **115 default suite total** (unit + smoke + read-only integration).
+- **117 with `-IncludeNetwork`** (adds real downloads + winget queries).
+- **+2 more with `-IncludeStateChange`** (mutates host: installs RetroArch, writes to install root).
+
+### Systems shipping
+
+16 total: 11 Libretro (nes, snes, gb, gbc, gba, megadrive, mastersystem, n64, atari2600, arcade, c64) + 5 Standalone (psx, ps2, ps3, gc, wii). All declared in `manifest/systems.psd1` — adding the next one is a manifest edit.
+
+### What didn't land in v0.1
+
+Captured for follow-up:
+
+- **EmulationStation frontend installer.** v0.1 installs the emulators and configures them but the user installs ES itself. Future v0.x can integrate via the `EmulatorAsset` Kind already declared in the schema.
+- **`vice-x64-core` hash placeholder.** Libretro buildbot was intermittently unreachable during pinning. Maintainer re-runs `Update-DownloadHashes` to fix.
+- **Theme installation.** The recalbox-backport theme upstream bundles isn't pulled in; ES shows its default look.
+- **Per-emulator advanced configs.** Gamepad bindings, scanlines, per-game overrides — out of scope; users tune via each emulator's GUI.
+- **Code signing.** No signed releases yet; users `Import-Module` from a checkout.
