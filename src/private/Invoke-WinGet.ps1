@@ -23,7 +23,7 @@ function Invoke-WinGet {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('list', 'install', 'upgrade', 'search', 'show')]
+        [ValidateSet('list', 'install', 'upgrade', 'uninstall', 'search', 'show')]
         [string] $Verb,
 
         [string[]] $Arguments = @(),

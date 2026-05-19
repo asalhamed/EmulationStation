@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### M9 — Uninstaller (reverse-replay)
+- `Uninstall-EmulationStation` replaces the M0 `NotImplementedException` stub. Walks `install-log.json` Actions[] in reverse, undoing what's undoable: `ShortcutCreated` → delete .lnk, `ConfigRendered` → delete .cfg, `FileWritten` → delete file, `DirectoryCreated` → remove if empty (preserving user-dropped ROMs), `WinGetInstall` → skip by default, opt-in via `-RemoveWinGetPackages`.
+- `Uninstall-WinGetPackage` (private): idempotent — checks if installed first; returns `Status='NotInstalled'` without erroring when absent.
+- `Invoke-WinGet` ValidateSet expanded to include `'uninstall'`.
+- **Conservative defaults locked in:**
+  - `-RemoveWinGetPackages` is OFF by default — RetroArch and the standalone emulators stay installed unless the user explicitly opts in.
+  - Only packages we recorded as `Status='Installed'` are uninstalled when opted in. `AlreadyInstalled` and `Upgraded` are skipped because we didn't put them there or didn't put that version there.
+  - Non-empty directories are preserved — only empty `DirectoryCreated` paths get removed. User ROMs are safe.
+- Returns a `RemovalSummary` hashtable: `Started`, `Finished`, `InstallRoot`, `Reversed[]`, `Skipped[]` (with reasons), `Failed[]`.
+- 7 new unit tests for `Uninstall-EmulationStation` covering: missing-log throw, ShortcutCreated reversal, ConfigRendered reversal, empty-vs-non-empty directory handling, default winget-skip, opt-in winget-uninstall with Status filtering, return shape.
+- 3 new unit tests for `Uninstall-WinGetPackage`.
+- Integration test in `Install-NES.Tests.ps1` extended with an install-then-uninstall round-trip assertion.
+- No defects from `reference/analysis.md` to close — those all fell by M7. M9 closes a brand-new concern that upstream's installer doesn't address at all: clean reversibility.
+- Test totals: 108 unit, 115 default suite, 8 NotRun (Network + StateChange opt-ins).
+
 ### M8 — Install log + shortcuts
 - `Write-InstallLog`: append-only JSON log at `$InstallRoot\install-log.json`. Schema v1 with `Version`, `Created`, `Actions[]`. Atomic write via `.tmp` + rename. Auto-injects `Timestamp` (ISO-8601 UTC). Throws on missing `Kind`.
 - `New-EmulationStationShortcut`: creates `.lnk` shortcuts via `WScript.Shell` COM. Throws if target exe is missing (no dangling shortcuts). Idempotent — overwrites existing.

@@ -61,4 +61,18 @@ Describe 'Install-EmulationStation — NES end-to-end' -Tag 'Network','StateChan
         }
         $r.SystemsInstalled | Should -Contain 'nes'
     }
+
+    It 'Uninstall-EmulationStation reverses the install (without removing winget packages)' {
+        $cfg = Join-Path $script:TempInstallRoot 'es_systems.cfg'
+        $set = Join-Path $script:TempInstallRoot 'es_settings.cfg'
+
+        $r = InModuleScope EmulationStationSetup -Parameters @{ R = $script:TempInstallRoot } {
+            param($R)
+            Uninstall-EmulationStation -InstallRoot $R
+        }
+        $r           | Should -Not -BeNullOrEmpty
+        $r.Reversed  | Should -Not -BeNullOrEmpty
+        Test-Path -LiteralPath $cfg | Should -BeFalse
+        Test-Path -LiteralPath $set | Should -BeFalse
+    }
 }
