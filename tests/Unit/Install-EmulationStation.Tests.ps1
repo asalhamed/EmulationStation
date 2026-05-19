@@ -185,6 +185,41 @@ Describe 'Install-EmulationStation — orchestration' {
         }
     }
 
+    It 'writes an install log with Started and Finished actions' {
+        $dest = Join-Path $script:TempRoot 'log-check'
+        InModuleScope EmulationStationSetup -Parameters @{ D = $dest } {
+            param($D)
+            $null = Install-EmulationStation -InstallRoot $D -SkipPreflight -NoShortcuts
+        }
+        $log = Join-Path $dest 'install-log.json'
+        Test-Path -LiteralPath $log | Should -BeTrue
+        $doc = Get-Content -LiteralPath $log -Raw | ConvertFrom-Json
+        $doc.Version | Should -Be 1
+        $kinds = @($doc.Actions | ForEach-Object Kind)
+        $kinds | Should -Contain 'Started'
+        $kinds | Should -Contain 'Finished'
+    }
+
+    It '-NoInstallLog suppresses the install log' {
+        $dest = Join-Path $script:TempRoot 'no-log'
+        InModuleScope EmulationStationSetup -Parameters @{ D = $dest } {
+            param($D)
+            $r = Install-EmulationStation -InstallRoot $D -SkipPreflight -NoShortcuts -NoInstallLog
+            $r.LogPath | Should -BeNullOrEmpty
+        }
+        Test-Path -LiteralPath (Join-Path $dest 'install-log.json') | Should -BeFalse
+    }
+
+    It '-NoShortcuts skips New-EmulationStationShortcut entirely' {
+        $dest = Join-Path $script:TempRoot 'no-shortcuts'
+        InModuleScope EmulationStationSetup -Parameters @{ D = $dest } {
+            param($D)
+            Mock New-EmulationStationShortcut { }
+            $null = Install-EmulationStation -InstallRoot $D -SkipPreflight -NoShortcuts
+            Should -Invoke New-EmulationStationShortcut -Times 0
+        }
+    }
+
     It 'returns a summary hashtable with the expected fields populated' {
         $dest = Join-Path $script:TempRoot 'summary'
         InModuleScope EmulationStationSetup -Parameters @{ D = $dest } {

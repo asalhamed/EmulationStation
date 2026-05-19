@@ -41,11 +41,15 @@ function Install-EmulationStation {
     [OutputType('hashtable')]
     param(
         [string[]] $Systems,
-        [string]   $InstallRoot   = (Join-Path $env:USERPROFILE '.emulationstation'),
+        [string]   $InstallRoot       = (Join-Path $env:USERPROFILE '.emulationstation'),
         [string]   $ManifestRoot,
         [string]   $CacheRoot,
         [switch]   $SkipPreflight,
-        [switch]   $SkipHomebrew
+        [switch]   $SkipHomebrew,
+        # M8 ---
+        [string]   $EmulationStationExe = (Join-Path ${env:ProgramFiles(x86)} 'EmulationStation\emulationstation.exe'),
+        [switch]   $NoShortcuts,
+        [switch]   $NoInstallLog
     )
 
     if (-not $ManifestRoot) { $ManifestRoot = $script:ManifestRoot }
@@ -54,6 +58,18 @@ function Install-EmulationStation {
     $started   = Get-Date
     $failures  = [System.Collections.Generic.List[hashtable]]::new()
     $installed = [System.Collections.Generic.List[string]]::new()
+
+    # M8: install log
+    $logPath = Join-Path $InstallRoot 'install-log.json'
+    function script:Log {
+        param([string] $Kind, [hashtable] $Props = @{})
+        if ($NoInstallLog) { return }
+        $a = @{ Kind = $Kind } + $Props
+        try { Write-InstallLog -LogPath $logPath -Action $a } catch {
+            Write-Warning "Install log write failed: $($_.Exception.Message)"
+        }
+    }
+    Log -Kind 'Started' -Props @{ Requested = if ($Systems) { @($Systems) } else { '*' }; InstallRoot = $InstallRoot }
 
     if (-not $SkipPreflight) {
         $checks = Assert-Prerequisite
@@ -79,6 +95,7 @@ function Install-EmulationStation {
         if (-not (Test-Path -LiteralPath $dir)) {
             if ($PSCmdlet.ShouldProcess($dir, 'Create directory')) {
                 New-Item -ItemType Directory -Path $dir -Force | Out-Null
+                Log -Kind 'DirectoryCreated' -Props @{ Path = $dir }
             }
         }
     }
@@ -101,6 +118,11 @@ function Install-EmulationStation {
                         Install-WinGetPackage -Id $pkg.Id
                     }
                     Write-Host "    -> $($result.Status) v$($result.Version)"
+                    Log -Kind 'WinGetInstall' -Props @{
+                        Id      = $result.Id
+                        Status  = $result.Status
+                        Version = $result.Version
+                    }
                 }
             }
             catch {
@@ -207,6 +229,7 @@ function Install-EmulationStation {
         try {
             Write-EsSystems -Systems $filtered -InstallRoot $InstallRoot -OutputPath $esSystemsPath -LauncherPaths $launcherPaths
             Write-Host "Wrote $esSystemsPath"
+            Log -Kind 'ConfigRendered' -Props @{ Path = $esSystemsPath }
         }
         catch {
             Write-Warning "es_systems.cfg generation failed: $($_.Exception.Message)"
@@ -217,11 +240,40 @@ function Install-EmulationStation {
         try {
             Write-EsSettings -UserProfile $env:USERPROFILE -OutputPath $esSettingsPath
             Write-Host "Wrote $esSettingsPath"
+            Log -Kind 'ConfigRendered' -Props @{ Path = $esSettingsPath }
         }
         catch {
             Write-Warning "es_settings.cfg generation failed: $($_.Exception.Message)"
             $failures.Add(@{ System = '*'; Step = 'WriteEsSettings'; Message = $_.Exception.Message })
         }
+    }
+
+    # M8: shortcuts
+    if (-not $NoShortcuts) {
+        if (-not (Test-Path -LiteralPath $EmulationStationExe -PathType Leaf)) {
+            Write-Warning "EmulationStation.exe not found at '$EmulationStationExe' — skipping shortcut creation. Pass -EmulationStationExe to override, or -NoShortcuts to silence."
+            $failures.Add(@{ System = '*'; Step = 'Shortcuts'; Message = "EmulationStation.exe not at $EmulationStationExe" })
+        } else {
+            $shortcuts = @(
+                Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\EmulationStation.lnk'
+                Join-Path $env:USERPROFILE 'Desktop\EmulationStation.lnk'
+            )
+            foreach ($lnk in $shortcuts) {
+                try {
+                    New-EmulationStationShortcut -TargetExe $EmulationStationExe -ShortcutPath $lnk
+                    Write-Host "Shortcut: $lnk"
+                    Log -Kind 'ShortcutCreated' -Props @{ Path = $lnk; Target = $EmulationStationExe }
+                } catch {
+                    Write-Warning "Shortcut creation failed for ${lnk}: $($_.Exception.Message)"
+                    $failures.Add(@{ System = '*'; Step = 'Shortcut'; Message = $_.Exception.Message; Path = $lnk })
+                }
+            }
+        }
+    }
+
+    Log -Kind 'Finished' -Props @{
+        SystemsInstalled = $installed.ToArray()
+        FailureCount     = $failures.Count
     }
 
     @{
@@ -231,5 +283,6 @@ function Install-EmulationStation {
         SystemsInstalled = $installed.ToArray()
         Failures         = $failures.ToArray()
         InstallRoot      = $InstallRoot
+        LogPath          = if ($NoInstallLog) { $null } else { $logPath }
     }
 }

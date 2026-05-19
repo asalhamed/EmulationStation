@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### M8 — Install log + shortcuts
+- `Write-InstallLog`: append-only JSON log at `$InstallRoot\install-log.json`. Schema v1 with `Version`, `Created`, `Actions[]`. Atomic write via `.tmp` + rename. Auto-injects `Timestamp` (ISO-8601 UTC). Throws on missing `Kind`.
+- `New-EmulationStationShortcut`: creates `.lnk` shortcuts via `WScript.Shell` COM. Throws if target exe is missing (no dangling shortcuts). Idempotent — overwrites existing.
+- `Install-EmulationStation` gains:
+  - `-EmulationStationExe` parameter (default `%ProgramFiles(x86)%\EmulationStation\emulationstation.exe`).
+  - `-NoShortcuts` switch (default off; opt-out for CI/headless).
+  - `-NoInstallLog` switch (default off; opt-out for ephemeral tests).
+  - Log calls sprinkled through the pipeline: `Started`, `WinGetInstall`, `DirectoryCreated`, `ConfigRendered`, `ShortcutCreated`, `Finished`. Each action carries kind-specific fields.
+  - Shortcuts: Start Menu (`$env:APPDATA\Microsoft\Windows\Start Menu\Programs\EmulationStation.lnk`) + Desktop (`$env:USERPROFILE\Desktop\EmulationStation.lnk`). Skipped (with logged warning) if EmulationStation.exe isn't at the expected path — no dangling shortcuts.
+  - Summary hashtable now includes `LogPath` (or `$null` when `-NoInstallLog`).
+- 7 new unit tests for the helpers (4 log + 3 shortcut), plus 3 new orchestrator-wiring tests, plus an extension to the integration test asserting `install-log.json` exists with the expected actions after a real install.
+- No defects from `reference/analysis.md` closed — those all fell by M7. M8 sets up M9's uninstaller (replay the log in reverse).
+- Test totals: 98 unit, 105 default suite, 7 NotRun (Network + StateChange opt-ins).
+
 ### M7 — Console-specific Standalone emulators
 - 5 new Standalone-launcher systems added to `manifest/systems.psd1`:
   - `psx` — `Stenzek.DuckStation` (replaces upstream ePSXe 2.0.5 from 2016).

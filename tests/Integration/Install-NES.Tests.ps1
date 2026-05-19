@@ -42,6 +42,15 @@ Describe 'Install-EmulationStation — NES end-to-end' -Tag 'Network','StateChan
 
         # Settings file
         Test-Path -LiteralPath (Join-Path $script:TempInstallRoot 'es_settings.cfg') | Should -BeTrue
+
+        # M8: install log
+        $log = Join-Path $script:TempInstallRoot 'install-log.json'
+        Test-Path -LiteralPath $log | Should -BeTrue
+        $doc = Get-Content -LiteralPath $log -Raw | ConvertFrom-Json
+        $doc.Version | Should -Be 1
+        $kinds = @($doc.Actions | ForEach-Object Kind)
+        $kinds | Should -Contain 'Started'
+        $kinds | Should -Contain 'Finished'
     }
 
     It 're-running is idempotent and returns SystemsInstalled containing nes again' {
