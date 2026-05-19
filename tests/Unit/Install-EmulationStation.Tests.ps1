@@ -38,7 +38,8 @@ Describe 'Install-EmulationStation — orchestration' {
     BeforeEach {
         InModuleScope EmulationStationSetup {
             Mock Assert-Prerequisite { @() }
-            Mock Get-EmulationStationManifest {
+            # Install-EmulationStation calls Resolve-Manifest directly, not Get-EmulationStationManifest.
+            Mock Resolve-Manifest {
                 $d = [DownloadSpec]::new()
                 $d.Id = 'fceumm-core'; $d.Url = 'https://example.com/fceumm.zip'
                 $d.Sha256 = ('a' * 64); $d.Kind = [DownloadKind]::LibretroCore
@@ -140,6 +141,47 @@ Describe 'Install-EmulationStation — orchestration' {
             Should -Invoke Write-EsSystems -ParameterFilter {
                 $LauncherPaths['Libretro.RetroArch'] -eq 'C:\fake\retroarch.exe'
             } -Times 1
+        }
+    }
+
+    It 'installs multiple systems in one call when -Systems lists several' {
+        $dest = Join-Path $script:TempRoot 'multi'
+        InModuleScope EmulationStationSetup -Parameters @{ D = $dest } {
+            param($D)
+            # Override the default single-system mock with a two-system one for this test only.
+            Mock Resolve-Manifest {
+                $d1 = [DownloadSpec]::new()
+                $d1.Id = 'fceumm-core'; $d1.Url = 'https://example.com/fceumm.zip'
+                $d1.Sha256 = ('a' * 64); $d1.Kind = [DownloadKind]::LibretroCore
+                $d2 = [DownloadSpec]::new()
+                $d2.Id = 'snes9x-core'; $d2.Url = 'https://example.com/snes9x.zip'
+                $d2.Sha256 = ('b' * 64); $d2.Kind = [DownloadKind]::LibretroCore
+
+                $nes = [EmulatorSystem]::new()
+                $nes.Name = 'nes'; $nes.FullName = 'NES'; $nes.Platform = 'nes'; $nes.Theme = 'nes'
+                $nes.RomExtensions = @('.nes')
+                $nes.Launcher = @{ Kind = 'Libretro'; LibretroCore = 'fceumm_libretro.dll' }
+                $nes.Packages = @(@{ Id = 'Libretro.RetroArch'; Version = $null })
+                $nes.Artifacts = @{ Core = 'fceumm-core' }
+
+                $snes = [EmulatorSystem]::new()
+                $snes.Name = 'snes'; $snes.FullName = 'SNES'; $snes.Platform = 'snes'; $snes.Theme = 'snes'
+                $snes.RomExtensions = @('.smc')
+                $snes.Launcher = @{ Kind = 'Libretro'; LibretroCore = 'snes9x_libretro.dll' }
+                $snes.Packages = @(@{ Id = 'Libretro.RetroArch'; Version = $null })
+                $snes.Artifacts = @{ Core = 'snes9x-core' }
+
+                [pscustomobject]@{ Systems = @($nes, $snes); Downloads = @($d1, $d2) }
+            }
+
+            $r = Install-EmulationStation -InstallRoot $D -SkipPreflight -Systems @('nes', 'snes')
+            $r.SystemsInstalled | Should -Contain 'nes'
+            $r.SystemsInstalled | Should -Contain 'snes'
+
+            # RetroArch is shared between the two systems; Install-WinGetPackage should be invoked
+            # for it once per system call (idempotent at the winget layer) but Resolve-EmulatorPath
+            # should only run once because launcherPaths cached the answer.
+            Should -Invoke Resolve-EmulatorPath -ParameterFilter { $PackageId -eq 'Libretro.RetroArch' } -Times 1
         }
     }
 

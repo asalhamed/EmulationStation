@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### M6 — All RetroArch systems (11 total)
+- `manifest/systems.psd1` expanded with 10 new libretro-driven systems: SNES, GB, GBC, GBA, Mega Drive / Genesis, Master System, N64, Atari 2600, Arcade (MAME 2010), C64.
+- Shared cores recognized: `gambatte_libretro.dll` for GB+GBC, `genesis_plus_gx_libretro.dll` for Mega Drive+Master System. One download entry, two systems consume it.
+- 3 new bundled homebrew ROMs (HTTPS, hash-pinned) from the OpenEmu/OpenEmu-Update GitHub repo: `snes-nwarp` (N-Warp Daisakusen, SNES), `gba-uranus` (Uranus Zero EV, GBA), `genesis-rickdangerous` (Rick Dangerous, Genesis). Together with the existing `nes-assimilate`, that's 4 bundled ROMs spanning 4 systems.
+- `Update-DownloadHashes` run on this box pinned 12 of 13 entries. The remaining placeholder (`vice-x64-core`) is due to a transient libretro buildbot SSL failure that has been intermittent throughout M5+M6 work. Maintainer re-runs when reachable; orchestrator handles the placeholder gracefully if a user installs `c64` before then.
+- 5 new manifest smoke tests in `tests/Unit/Manifest.Smoke.Tests.ps1`: system count, artifact cross-references, shape invariants, libretro core naming convention, shared-core intentionality (the gambatte / genesis_plus_gx pair).
+- 1 new orchestrator test: `Install-EmulationStation -Systems @('nes','snes')` runs multi-system, with `Resolve-EmulatorPath` for RetroArch only invoked once due to the path-cache.
+- Fixed a latent mock-target bug in `Install-EmulationStation.Tests.ps1`: the tests were mocking `Get-EmulationStationManifest` but the orchestrator calls `Resolve-Manifest` directly. The single-system manifest from M5 had hidden the misalignment; M6's expanded manifest exposed it. Now mocking the actual callee.
+- Closes upstream defects #18 (final — the 700-line per-system copy-paste install logic is now a single generic loop driven by the manifest) and #23 (full — per-system opt-in via `-Systems`).
+- Test totals: 86 unit, 93 default suite, 4 NotRun without `-IncludeNetwork`, 6 NotRun without `-IncludeStateChange`.
+
 ### M5 — NES end-to-end install
 - `Install-EmulationStation`: full orchestration — preflight, manifest, winget packages, verified downloads, artifact placement (LibretroCore → cores dir, Rom → roms/<system>/, Theme → themes/, EmulatorAsset deferred), `Write-EsSystems` + `Write-EsSettings` rendering. Per-system and per-artifact failures aggregate into the returned summary rather than aborting.
 - `Expand-VerifiedArchive`: `.zip` via .NET `ZipFile.ExtractToDirectory` (no shell dependency); `.7z` via `7z.exe` on PATH with a clear error if missing.

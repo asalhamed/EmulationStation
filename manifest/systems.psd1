@@ -16,5 +16,127 @@
                 Homebrew = 'nes-assimilate'
             }
         }
+        @{
+            Name          = 'snes'
+            FullName      = 'Super Nintendo Entertainment System'
+            RomExtensions = @('.smc', '.sfc', '.fig', '.swc')
+            Notes         = 'N-Warp Daisakusen V1.1 (homebrew) used as the bundled ROM.'
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'snes9x_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{
+                Core     = 'snes9x-core'
+                Homebrew = 'snes-nwarp'
+            }
+        }
+        @{
+            Name          = 'gb'
+            FullName      = 'Nintendo Game Boy'
+            RomExtensions = @('.gb')
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'gambatte_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{ Core = 'gambatte-core' }
+        }
+        @{
+            Name          = 'gbc'
+            FullName      = 'Nintendo Game Boy Color'
+            RomExtensions = @('.gbc', '.cgb')
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'gambatte_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{ Core = 'gambatte-core' }
+        }
+        @{
+            Name          = 'gba'
+            FullName      = 'Nintendo Game Boy Advance'
+            RomExtensions = @('.gba', '.agb')
+            Notes         = 'Uranus Zero EV (homebrew) used as the bundled ROM.'
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'mgba_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{
+                Core     = 'mgba-core'
+                Homebrew = 'gba-uranus'
+            }
+        }
+        @{
+            Name          = 'megadrive'
+            FullName      = 'Sega Mega Drive / Genesis'
+            RomExtensions = @('.gen', '.md', '.smd', '.bin')
+            Notes         = 'Rick Dangerous (homebrew port) used as the bundled ROM.'
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'genesis_plus_gx_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{
+                Core     = 'genesis-plus-gx-core'
+                Homebrew = 'genesis-rickdangerous'
+            }
+        }
+        @{
+            Name          = 'mastersystem'
+            FullName      = 'Sega Master System'
+            RomExtensions = @('.sms')
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'genesis_plus_gx_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{ Core = 'genesis-plus-gx-core' }
+        }
+        @{
+            Name          = 'n64'
+            FullName      = 'Nintendo 64'
+            RomExtensions = @('.n64', '.z64', '.v64')
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'parallel_n64_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{ Core = 'parallel-n64-core' }
+        }
+        @{
+            Name          = 'atari2600'
+            FullName      = 'Atari 2600'
+            RomExtensions = @('.a26', '.bin')
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'stella_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{ Core = 'stella-core' }
+        }
+        @{
+            Name          = 'arcade'
+            FullName      = 'Arcade (MAME 2010)'
+            RomExtensions = @('.zip')
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'mame2010_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{ Core = 'mame2010-core' }
+        }
+        @{
+            Name          = 'c64'
+            FullName      = 'Commodore 64'
+            RomExtensions = @('.d64', '.t64', '.tap', '.prg', '.crt')
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'vice_x64_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{ Core = 'vice-x64-core' }
+        }
     )
 }
