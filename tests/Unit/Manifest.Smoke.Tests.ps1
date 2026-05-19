@@ -8,8 +8,23 @@ Describe 'Shipped manifest — smoke checks' {
         $script:Manifest = Get-EmulationStationManifest
     }
 
-    It 'has exactly 11 systems (NES + 10 added in M6)' {
-        $script:Manifest.Systems.Count | Should -Be 11
+    It 'has exactly 16 systems (11 libretro from M3+M6 + 5 Standalone from M7)' {
+        $script:Manifest.Systems.Count | Should -Be 16
+    }
+
+    It 'has exactly 5 Standalone systems with all required Launcher fields' {
+        $standalones = @($script:Manifest.Systems | Where-Object { $_.Launcher.Kind -eq 'Standalone' })
+        $standalones.Count | Should -Be 5
+        foreach ($s in $standalones) {
+            $s.Launcher.PackageId       | Should -Not -BeNullOrEmpty -Because "system '$($s.Name)' missing PackageId"
+            $s.Launcher.ExecutableName  | Should -Not -BeNullOrEmpty -Because "system '$($s.Name)' missing ExecutableName"
+            $s.Launcher.CommandTemplate | Should -Not -BeNullOrEmpty -Because "system '$($s.Name)' missing CommandTemplate"
+        }
+    }
+
+    It 'has exactly 11 Libretro systems' {
+        $libretros = @($script:Manifest.Systems | Where-Object { $_.Launcher.Kind -eq 'Libretro' })
+        $libretros.Count | Should -Be 11
     }
 
     It 'every system Artifact reference resolves to an entry in Downloads' {

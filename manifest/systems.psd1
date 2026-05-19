@@ -138,5 +138,75 @@
             Packages      = @('Libretro.RetroArch')
             Artifacts     = @{ Core = 'vice-x64-core' }
         }
+
+        # ---- Standalone emulators (M7) ----
+        @{
+            Name          = 'psx'
+            FullName      = 'Sony PlayStation'
+            RomExtensions = @('.cue', '.iso', '.bin', '.chd', '.pbp', '.img')
+            Notes         = 'DuckStation replaces upstream ePSXe 2.0.5.'
+            Launcher      = @{
+                Kind            = 'Standalone'
+                PackageId       = 'Stenzek.DuckStation'
+                ExecutableName  = 'duckstation-qt-x64-ReleaseLTCG.exe'
+                CommandTemplate = '"%EXE%" -batch -- "%ROM%"'
+            }
+            Packages      = @('Stenzek.DuckStation')
+            Artifacts     = @{}
+        }
+        @{
+            Name          = 'ps2'
+            FullName      = 'Sony PlayStation 2'
+            RomExtensions = @('.iso', '.chd', '.bin', '.gz')
+            Notes         = 'PCSX2-Qt (current branch) replaces upstream PCSX2 1.6.0 (2020).'
+            Launcher      = @{
+                Kind            = 'Standalone'
+                PackageId       = 'PCSX2Team.PCSX2'
+                ExecutableName  = 'pcsx2-qt.exe'
+                CommandTemplate = '"%EXE%" -batch -fullscreen -- "%ROM%"'
+            }
+            Packages      = @('PCSX2Team.PCSX2')
+            Artifacts     = @{}
+        }
+        @{
+            Name          = 'ps3'
+            FullName      = 'Sony PlayStation 3'
+            RomExtensions = @('.iso', '.pkg', '.bin')
+            Notes         = 'BIOS / decryption keys must be supplied by the user.'
+            Launcher      = @{
+                Kind            = 'Standalone'
+                PackageId       = 'RPCS3.RPCS3'
+                ExecutableName  = 'rpcs3.exe'
+                CommandTemplate = '"%EXE%" "%ROM%"'
+            }
+            Packages      = @('RPCS3.RPCS3')
+            Artifacts     = @{}
+        }
+        @{
+            Name          = 'gc'
+            FullName      = 'Nintendo GameCube'
+            RomExtensions = @('.iso', '.gcm', '.gcz')
+            Launcher      = @{
+                Kind            = 'Standalone'
+                PackageId       = 'DolphinEmulator.Dolphin'
+                ExecutableName  = 'Dolphin.exe'
+                CommandTemplate = '"%EXE%" -b -e "%ROM%"'
+            }
+            Packages      = @('DolphinEmulator.Dolphin')
+            Artifacts     = @{}
+        }
+        @{
+            Name          = 'wii'
+            FullName      = 'Nintendo Wii'
+            RomExtensions = @('.iso', '.wad', '.wbfs')
+            Launcher      = @{
+                Kind            = 'Standalone'
+                PackageId       = 'DolphinEmulator.Dolphin'
+                ExecutableName  = 'Dolphin.exe'
+                CommandTemplate = '"%EXE%" -b -e "%ROM%"'
+            }
+            Packages      = @('DolphinEmulator.Dolphin')
+            Artifacts     = @{}
+        }
     )
 }

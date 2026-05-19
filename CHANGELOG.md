@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### M7 — Console-specific Standalone emulators
+- 5 new Standalone-launcher systems added to `manifest/systems.psd1`:
+  - `psx` — `Stenzek.DuckStation` (replaces upstream ePSXe 2.0.5 from 2016).
+  - `ps2` — `PCSX2Team.PCSX2` (PCSX2-Qt; replaces upstream PCSX2 1.6.0 from 2020).
+  - `ps3` — `RPCS3.RPCS3`.
+  - `gc` — `DolphinEmulator.Dolphin`.
+  - `wii` — `DolphinEmulator.Dolphin` (shared package + executable with `gc`).
+- Each declares the right `PackageId`, `ExecutableName`, and `CommandTemplate` (batch-mode flags so the emulator exits cleanly back to ES after a session). `%EXE%` substitution happens at config-render time via `Resolve-EmulatorPath`; `%ROM%` is preserved for ES's runtime substitution.
+- No new downloads — Standalone systems are pure winget installs. Users supply their own ROMs and (for PSX/PS2/PS3) BIOS files.
+- `tests/Unit/Manifest.Smoke.Tests.ps1` updated: total system count now 16 (11 Libretro + 5 Standalone), with a new assertion that Standalone systems have all four required launcher fields.
+- `tests/Integration/Standalone.Network.Tests.ps1` (new, `Network` tag): best-effort path resolution against any of the 5 packages already installed on the host. Skips cleanly when none are installed (the expected case during M7 implementation on this box).
+- Closes upstream defects #16 (final — hardcoded `C:\tools\Dolphin-Beta\` paths) and #17 (final — outdated PCSX2 1.6.0 and ePSXe 2.0.5 dropped entirely).
+- **24 of 24 upstream defects from `reference/analysis.md` now addressed.** Remaining work is forward-looking (install log, uninstaller, docs, ship).
+- Test totals: 88 unit, 95 default suite, 7 NotRun (Network + StateChange opt-ins).
+
 ### M6 — All RetroArch systems (11 total)
 - `manifest/systems.psd1` expanded with 10 new libretro-driven systems: SNES, GB, GBC, GBA, Mega Drive / Genesis, Master System, N64, Atari 2600, Arcade (MAME 2010), C64.
 - Shared cores recognized: `gambatte_libretro.dll` for GB+GBC, `genesis_plus_gx_libretro.dll` for Mega Drive+Master System. One download entry, two systems consume it.
