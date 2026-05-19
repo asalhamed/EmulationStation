@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### M5 — NES end-to-end install
+- `Install-EmulationStation`: full orchestration — preflight, manifest, winget packages, verified downloads, artifact placement (LibretroCore → cores dir, Rom → roms/<system>/, Theme → themes/, EmulatorAsset deferred), `Write-EsSystems` + `Write-EsSettings` rendering. Per-system and per-artifact failures aggregate into the returned summary rather than aborting.
+- `Expand-VerifiedArchive`: `.zip` via .NET `ZipFile.ExtractToDirectory` (no shell dependency); `.7z` via `7z.exe` on PATH with a clear error if missing.
+- `Update-DownloadHashes`: maintainer cmdlet that downloads each artifact and rewrites `downloads.psd1` with computed SHA-256. Warn-and-continue per entry; never writes a broken hash back.
+- `Get-RemoteFileHash`: private helper for the maintainer flow. Uses `-ErrorAction Stop` so network failures propagate rather than silently emitting an empty hash.
+- `tests/Invoke-Tests.ps1` gains `-IncludeStateChange` for opt-in to host-mutating tests.
+- Real SHA-256 pinned for `nes-assimilate` (homebrew NES ROM from nesworld.com). `fceumm-core` retains placeholder hash because `buildbot.libretro.com` had SSL-handshake failures during M5 implementation — maintainer re-runs `Update-DownloadHashes` when libretro is reachable. The orchestrator handles the placeholder gracefully: download fails verification → recorded in `Failures`, install continues for the rest of the artifacts.
+- 13 new unit tests (3 Expand-VerifiedArchive + 2 Update-DownloadHashes + 8 Install-EmulationStation). Integration test in `tests/Integration/Install-NES.Tests.ps1` tagged `Network`+`StateChange` (opt-in).
+- Test totals: 80 unit, 87 default suite, 90 with `-IncludeNetwork`.
+- Closes upstream defects #4 partial (hash pinning mechanism + maintainer flow; full pin lands when libretro reachable), #12 partial (aggregated failures, no `exit -1`), #13 (`Expand-Archive` shadowing + hardcoded 7z path), #19 partial (orchestrator unit tests + integration scaffold).
+
 ### M4 — Templated config generation
 - `Render-Template`: simple `{{TOKEN}}` substitution helper. XML-escapes by default; `-NoXmlEscape` for INI/plain. Unknown tokens left literal so un-substituted placeholders are visible.
 - `Write-EsSystems`: renders `es_systems.cfg` directly from `EmulatorSystem[]`. One `<system>` block per system. Libretro command = `"<retroarch.exe>" -L "<core.dll>" %ROM%`; Standalone command = manifest's `CommandTemplate` with `%EXE%` substituted. `%ROM%`/`%ROM_RAW%` preserved for ES runtime substitution. Output validated as well-formed XML before write.

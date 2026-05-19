@@ -5,7 +5,11 @@ param(
     [string] $Scope = 'All',
 
     # Opt-in: include tests tagged 'Network' that hit the real internet.
-    [switch] $IncludeNetwork
+    [switch] $IncludeNetwork,
+
+    # Opt-in: include tests tagged 'StateChange' that mutate the host (install winget packages,
+    # write files outside a temp dir, etc.). Implies -IncludeNetwork.
+    [switch] $IncludeStateChange
 )
 
 $ErrorActionPreference = 'Stop'
@@ -35,8 +39,11 @@ $config.Run.Path         = $paths
 $config.Run.Exit         = $true
 $config.Output.Verbosity = 'Detailed'
 
-if (-not $IncludeNetwork) {
-    $config.Filter.ExcludeTag = 'Network'
+$excludeTags = @()
+if (-not $IncludeNetwork)     { $excludeTags += 'Network' }
+if (-not $IncludeStateChange) { $excludeTags += 'StateChange' }
+if ($excludeTags) {
+    $config.Filter.ExcludeTag = $excludeTags
 }
 
 Invoke-Pester -Configuration $config

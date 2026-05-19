@@ -36,6 +36,7 @@ class DownloadSpec {
     [string]       $System
 }
 
+
 class PreflightCheck {
     [string] $Name
     [PreflightStatus] $Status
