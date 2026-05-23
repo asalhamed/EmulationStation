@@ -49,7 +49,11 @@ function Install-EmulationStation {
         # M8 ---
         [string]   $EmulationStationExe = (Join-Path ${env:ProgramFiles(x86)} 'EmulationStation\emulationstation.exe'),
         [switch]   $NoShortcuts,
-        [switch]   $NoInstallLog
+        [switch]   $NoInstallLog,
+        # Frontend (ES-DE) ---
+        [switch]   $SkipFrontend,
+        [string]   $FrontendPackageId = 'ES-DE.EmulationStation-DE',
+        [string]   $FrontendExecutableName = 'ES-DE.exe'
     )
 
     if (-not $ManifestRoot) { $ManifestRoot = $script:ManifestRoot }
@@ -230,6 +234,19 @@ function Install-EmulationStation {
             Write-EsSystems -Systems $filtered -InstallRoot $InstallRoot -OutputPath $esSystemsPath -LauncherPaths $launcherPaths
             Write-Host "Wrote $esSystemsPath"
             Log -Kind 'ConfigRendered' -Props @{ Path = $esSystemsPath }
+
+            # ES-DE reads custom_systems/es_systems.xml from its --home directory. We mirror the
+            # same content there so ES-DE picks up our generated system definitions when launched
+            # with --home <InstallRoot>.
+            $esdeCustomDir = Join-Path $InstallRoot 'custom_systems'
+            if (-not (Test-Path -LiteralPath $esdeCustomDir)) {
+                New-Item -ItemType Directory -Path $esdeCustomDir -Force | Out-Null
+                Log -Kind 'DirectoryCreated' -Props @{ Path = $esdeCustomDir }
+            }
+            $esdeSystemsXml = Join-Path $esdeCustomDir 'es_systems.xml'
+            Copy-Item -LiteralPath $esSystemsPath -Destination $esdeSystemsXml -Force
+            Write-Host "Mirrored to $esdeSystemsXml (ES-DE custom_systems)"
+            Log -Kind 'ConfigRendered' -Props @{ Path = $esdeSystemsXml; Format = 'ESDE' }
         }
         catch {
             Write-Warning "es_systems.cfg generation failed: $($_.Exception.Message)"
@@ -248,6 +265,35 @@ function Install-EmulationStation {
         }
     }
 
+    # Frontend: install ES-DE and auto-detect its path for shortcut creation.
+    $frontendArgs = $null
+    if (-not $SkipFrontend) {
+        try {
+            Write-Host "==== Frontend: $FrontendPackageId ===="
+            if ($PSCmdlet.ShouldProcess($FrontendPackageId, 'Install winget package (frontend)')) {
+                $r = Install-WinGetPackage -Id $FrontendPackageId
+                Write-Host "  -> $($r.Status) v$($r.Version)"
+                Log -Kind 'FrontendInstalled' -Props @{ Id = $FrontendPackageId; Status = $r.Status; Version = $r.Version }
+            }
+
+            $resolvedFrontend = Resolve-EmulatorPath -PackageId $FrontendPackageId -ExecutableName $FrontendExecutableName
+            Write-Host "  Resolved $FrontendPackageId -> $resolvedFrontend"
+            Log -Kind 'FrontendResolved' -Props @{ Path = $resolvedFrontend }
+
+            # If the caller didn't override -EmulationStationExe, point shortcut creation at ES-DE.
+            if (-not $PSBoundParameters.ContainsKey('EmulationStationExe')) {
+                $EmulationStationExe = $resolvedFrontend
+            }
+            # Pass --home <InstallRoot> so ES-DE reads custom_systems/es_systems.xml from our tree
+            # instead of the default %USERPROFILE%\ES-DE\.
+            $frontendArgs = "--home `"$InstallRoot`""
+        }
+        catch {
+            Write-Warning "Frontend install/resolution failed: $($_.Exception.Message)"
+            $failures.Add(@{ System = '*'; Step = "Frontend:$FrontendPackageId"; Message = $_.Exception.Message })
+        }
+    }
+
     # M8: shortcuts
     if (-not $NoShortcuts) {
         if (-not (Test-Path -LiteralPath $EmulationStationExe -PathType Leaf)) {
@@ -260,9 +306,11 @@ function Install-EmulationStation {
             )
             foreach ($lnk in $shortcuts) {
                 try {
-                    New-EmulationStationShortcut -TargetExe $EmulationStationExe -ShortcutPath $lnk
-                    Write-Host "Shortcut: $lnk"
-                    Log -Kind 'ShortcutCreated' -Props @{ Path = $lnk; Target = $EmulationStationExe }
+                    $params = @{ TargetExe = $EmulationStationExe; ShortcutPath = $lnk }
+                    if ($frontendArgs) { $params.Arguments = $frontendArgs }
+                    New-EmulationStationShortcut @params
+                    Write-Host "Shortcut: $lnk$(if ($frontendArgs) { ' [args=' + $frontendArgs + ']' })"
+                    Log -Kind 'ShortcutCreated' -Props @{ Path = $lnk; Target = $EmulationStationExe; Arguments = $frontendArgs }
                 } catch {
                     Write-Warning "Shortcut creation failed for ${lnk}: $($_.Exception.Message)"
                     $failures.Add(@{ System = '*'; Step = 'Shortcut'; Message = $_.Exception.Message; Path = $lnk })

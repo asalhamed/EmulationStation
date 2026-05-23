@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### ES-DE frontend included with full linkage
+- **`Install-EmulationStation` now installs the ES-DE frontend by default.** New parameter `-SkipFrontend` opts out. Defaults: `-FrontendPackageId 'ES-DE.EmulationStation-DE'`, `-FrontendExecutableName 'ES-DE.exe'`.
+- After the per-system loop and config renders, the orchestrator: (1) installs `ES-DE.EmulationStation-DE` via winget (idempotent), (2) resolves `ES-DE.exe` via `Resolve-EmulatorPath`, (3) auto-sets `$EmulationStationExe` for shortcut creation if the caller didn't override, (4) sets `$frontendArgs = "--home <InstallRoot>"`.
+- **`es_systems.cfg` is mirrored to `<InstallRoot>\custom_systems\es_systems.xml`** — the location ES-DE reads when launched with `--home <InstallRoot>`. Same XML content (the `<systemList>` schema is compatible), just the filename and path differ. Logged as a separate `ConfigRendered` action with `Format=ESDE`.
+- **`New-EmulationStationShortcut` gains `-Arguments`** so the Start Menu + Desktop shortcuts carry `--home "<InstallRoot>"`. This makes ES-DE read our existing `.emulationstation` tree (config, gamelists, themes) instead of the default `%USERPROFILE%\ES-DE\`. Tracked in the install log.
+- **Shortcut probe** auto-switches to ES-DE's install path when the frontend is installed. The legacy classic-ES default at `${ProgramFiles(x86)}\EmulationStation\emulationstation.exe` is still honored if the caller passes `-EmulationStationExe`.
+- 4 new unit tests: ES-DE installed by default; `-SkipFrontend` skips; `custom_systems\es_systems.xml` mirror appears; shortcuts carry `--home <InstallRoot>` arguments.
+- End-to-end install verified on Windows 11 Pro: **0 failures**, 13 systems, ES-DE v3.4.1 installed, Start Menu + Desktop shortcuts created with `--home` arg. Wall clock 1m 11s (ES-DE is the heaviest single download).
+
 ### Fixes from first real end-to-end install
 - **`Resolve-EmulatorPath`** — fall back to `UninstallString` (or `QuietUninstallString`) when the registry entry's `InstallLocation` is empty. NSIS installers (`Libretro.RetroArch` is the canonical case — installs to `C:\RetroArch-Win64\` but the install key doesn't populate `InstallLocation`) now resolve correctly. Quoted paths with trailing arguments (`"C:\...\uninstall.exe" /S`) handled. Adds 2 unit tests.
 - **`Write-EsSystems`** — derive the cores directory from `Split-Path -Parent <retroarch.exe>` instead of `$InstallRoot\systems\retroarch\cores\`. Previously the rendered `<command>` pointed at a directory `Place-Artifact` never wrote to, so RetroArch would launch but fail to load the core at runtime. Regression test pins the contract: cores dir must be a sibling of `retroarch.exe`, never under `$InstallRoot`.

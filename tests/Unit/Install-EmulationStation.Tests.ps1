@@ -232,4 +232,60 @@ Describe 'Install-EmulationStation — orchestration' {
             $r.Finished         | Should -BeOfType [datetime]
         }
     }
+
+    It 'installs the ES-DE frontend by default' {
+        $dest = Join-Path $script:TempRoot 'frontend-on'
+        InModuleScope EmulationStationSetup -Parameters @{ D = $dest } {
+            param($D)
+            $null = Install-EmulationStation -InstallRoot $D -SkipPreflight -NoShortcuts -WarningAction SilentlyContinue
+            Should -Invoke Install-WinGetPackage -ParameterFilter { $Id -eq 'ES-DE.EmulationStation-DE' } -Times 1
+        }
+    }
+
+    It '-SkipFrontend skips the ES-DE install' {
+        $dest = Join-Path $script:TempRoot 'frontend-off'
+        InModuleScope EmulationStationSetup -Parameters @{ D = $dest } {
+            param($D)
+            $null = Install-EmulationStation -InstallRoot $D -SkipPreflight -NoShortcuts -SkipFrontend -WarningAction SilentlyContinue
+            Should -Invoke Install-WinGetPackage -ParameterFilter { $Id -eq 'ES-DE.EmulationStation-DE' } -Times 0
+        }
+    }
+
+    It 'mirrors es_systems content to <InstallRoot>\custom_systems\es_systems.xml' {
+        $dest = Join-Path $script:TempRoot 'esde-mirror'
+        InModuleScope EmulationStationSetup -Parameters @{ D = $dest } {
+            param($D)
+            # Make Write-EsSystems actually produce a file so the Copy-Item can succeed.
+            Mock Write-EsSystems {
+                Set-Content -LiteralPath $OutputPath -Value '<systemList><system><name>nes</name></system></systemList>'
+            }
+            $null = Install-EmulationStation -InstallRoot $D -SkipPreflight -NoShortcuts -SkipFrontend -WarningAction SilentlyContinue
+        }
+        $mirrored = Join-Path $dest 'custom_systems\es_systems.xml'
+        Test-Path -LiteralPath $mirrored | Should -BeTrue
+        (Get-Content -LiteralPath $mirrored -Raw) | Should -Match '<name>nes</name>'
+    }
+
+    It 'shortcut receives --home <InstallRoot> argument when frontend is installed' {
+        $dest = Join-Path $script:TempRoot 'shortcut-args'
+        InModuleScope EmulationStationSetup -Parameters @{ D = $dest } {
+            param($D)
+            # Make Write-EsSystems produce a real file so the ES-DE mirror succeeds.
+            Mock Write-EsSystems {
+                Set-Content -LiteralPath $OutputPath -Value '<systemList></systemList>'
+            }
+            # Pretend ES-DE.exe is at this path so Test-Path on the resolved exe succeeds.
+            $fakeEsde = Join-Path $D 'fake-esde.exe'
+            New-Item -ItemType Directory -Path $D -Force | Out-Null
+            Set-Content -LiteralPath $fakeEsde -Value 'fake'
+            Mock Resolve-EmulatorPath { $fakeEsde } -ParameterFilter { $PackageId -eq 'ES-DE.EmulationStation-DE' }
+            Mock New-EmulationStationShortcut { }
+
+            $null = Install-EmulationStation -InstallRoot $D -SkipPreflight -WarningAction SilentlyContinue
+
+            Should -Invoke New-EmulationStationShortcut -ParameterFilter {
+                $Arguments -like "*--home*" -and $Arguments -like "*$D*"
+            } -Times 2   # Start Menu + Desktop
+        }
+    }
 }

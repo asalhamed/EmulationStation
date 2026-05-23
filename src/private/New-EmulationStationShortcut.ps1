@@ -19,6 +19,10 @@ function New-EmulationStationShortcut {
 
     .PARAMETER Description
     Optional tooltip. Defaults to 'EmulationStation'.
+
+    .PARAMETER Arguments
+    Optional command-line arguments stored in the shortcut. For ES-DE we pass
+    --home '<InstallRoot>' so it reads our existing tree instead of the default ~/ES-DE/.
     #>
     [CmdletBinding()]
     param(
@@ -30,7 +34,9 @@ function New-EmulationStationShortcut {
 
         [string] $WorkingDirectory,
 
-        [string] $Description = 'EmulationStation'
+        [string] $Description = 'EmulationStation',
+
+        [string] $Arguments
     )
 
     if (-not (Test-Path -LiteralPath $TargetExe -PathType Leaf)) {
@@ -49,6 +55,7 @@ function New-EmulationStationShortcut {
         $shortcut.TargetPath       = $TargetExe
         $shortcut.WorkingDirectory = if ($WorkingDirectory) { $WorkingDirectory } else { Split-Path -Parent $TargetExe }
         $shortcut.Description      = $Description
+        if ($Arguments) { $shortcut.Arguments = $Arguments }
         $shortcut.Save()
     }
     finally {
