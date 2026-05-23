@@ -4,7 +4,7 @@ Notes for AI assistants (Claude, Copilot, etc.) working on this repo.
 
 ## What this is
 
-A PowerShell 7+ module that installs and configures EmulationStation with 16 emulated systems on Windows 10/11. **v0.1.0 shipped.** Built as a security/reliability-focused rewrite of [Francommit/win10_emulation_station](https://github.com/Francommit/win10_emulation_station), closing 24 documented defects in the upstream.
+A PowerShell 7+ module that installs and configures EmulationStation with 13 emulated systems on Windows 10/11 — including the **ES-DE frontend** itself, wired with `--home <InstallRoot>` so it reads our generated `custom_systems/es_systems.xml`. **v0.1.0 shipped** (then patched post-release to handle real-install findings). Built as a security/reliability-focused rewrite of [Francommit/win10_emulation_station](https://github.com/Francommit/win10_emulation_station), closing 24 documented defects in the upstream.
 
 ## Where to start reading
 
