@@ -138,6 +138,18 @@
             Packages      = @('Libretro.RetroArch')
             Artifacts     = @{ Core = 'vice-x64-core' }
         }
+        @{
+            Name          = 'msx'
+            FullName      = 'Microsoft MSX'
+            RomExtensions = @('.rom', '.mx1', '.mx2', '.col', '.dsk', '.cas', '.m3u')
+            Notes         = 'MSX system BIOS ROMs (e.g., MSX2.ROM, MSX2P.ROM, DISK.ROM) must be supplied by the user and placed under RetroArch system directory.'
+            Launcher      = @{
+                Kind         = 'Libretro'
+                LibretroCore = 'fmsx_libretro.dll'
+            }
+            Packages      = @('Libretro.RetroArch')
+            Artifacts     = @{ Core = 'fmsx-core' }
+        }
 
         # ---- Standalone emulators (M7) ----
         @{
@@ -168,11 +180,24 @@
             Packages      = @('PCSX2Team.PCSX2')
             Artifacts     = @{}
         }
-        # PS3 (RPCS3) and GC/Wii (Dolphin) entries removed 2026-05-23 — winget upstream broken:
-        #   - RPCS3.RPCS3 is not in the public winget repo (no matches at all)
-        #   - DolphinEmulator.Dolphin manifest points at dl-mirror.dolphin-emu.org/5.0/dolphin-x64-5.0.exe
-        #     which returns HTTP 403 (mirror dropped the 2016 release).
-        # Restore both when winget manifests are fixed upstream. The schema and orchestrator support
-        # them unchanged — just paste the entries back.
+        @{
+            Name          = 'ps3'
+            FullName      = 'Sony PlayStation 3'
+            RomExtensions = @('.iso', '.pkg', '.bin', '.elf', '.self')
+            Notes         = 'RPCS3 not in winget; binary downloaded via Source=Manifest. BIOS / decryption keys must be supplied by the user.'
+            Launcher      = @{
+                Kind            = 'Standalone'
+                Source          = 'Manifest'
+                PackageId       = 'RPCS3'             # logical key (not a winget id); orchestrator uses it for $launcherPaths
+                ExecutableName  = 'rpcs3.exe'
+                CommandTemplate = '"%EXE%" "%ROM%"'
+            }
+            Packages      = @()                       # empty — no winget install for Manifest-sourced systems
+            Artifacts     = @{ Emulator = 'rpcs3-binary' }
+        }
+
+        # GC/Wii (Dolphin) entries removed 2026-05-23 — DolphinEmulator.Dolphin's winget manifest
+        # points at dl-mirror.dolphin-emu.org/5.0/dolphin-x64-5.0.exe which returns HTTP 403
+        # (2016 mirror dropped). Restore when winget manifest fixed upstream.
     )
 }

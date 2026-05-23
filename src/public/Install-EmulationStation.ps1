@@ -108,45 +108,76 @@ function Install-EmulationStation {
     $downloadsById = @{}
     foreach ($d in $manifest.Downloads) { $downloadsById[$d.Id] = $d }
 
+    # If any artifact is .7z and 7z isn't on PATH, install 7zip.7zip and refresh PATH so
+    # Expand-VerifiedArchive can shell to it immediately.
+    $needsSevenZip = $false
+    foreach ($d in $manifest.Downloads) {
+        if ([System.IO.Path]::GetExtension($d.Url.Split('?')[0]).ToLowerInvariant() -eq '.7z') { $needsSevenZip = $true; break }
+    }
+    if ($needsSevenZip -and -not (Get-Command 7z -ErrorAction SilentlyContinue)) {
+        try {
+            Write-Host "==== Prereq: 7zip.7zip (required for .7z artifacts) ===="
+            $r = Install-WinGetPackage -Id '7zip.7zip'
+            Write-Host "  -> $($r.Status) v$($r.Version)"
+            Log -Kind 'WinGetInstall' -Props @{ Id = '7zip.7zip'; Status = $r.Status; Version = $r.Version; Reason = 'sevenzip-prereq' }
+            # Refresh PATH for current process so Get-Command 7z works immediately.
+            $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
+        }
+        catch {
+            Write-Warning "7zip.7zip install failed: $($_.Exception.Message). .7z artifacts will fail to extract."
+            $failures.Add(@{ System = '*'; Step = 'InstallPackage:7zip.7zip'; Message = $_.Exception.Message })
+        }
+    }
+
     foreach ($system in $filtered) {
         Write-Host "==== $($system.Name) ($($system.FullName)) ===="
         $sysSucceeded = $true
+        $launcherSource = if ($system.Launcher.Source) { $system.Launcher.Source } else { 'WinGet' }
+        $isManifestSource = ($launcherSource -eq 'Manifest')
 
-        foreach ($pkg in $system.Packages) {
-            try {
-                Write-Host "  Install package: $($pkg.Id)$(if ($pkg.Version) { " ($($pkg.Version))" })"
-                if ($PSCmdlet.ShouldProcess($pkg.Id, 'Install winget package')) {
-                    $result = if ($pkg.Version) {
-                        Install-WinGetPackage -Id $pkg.Id -Version $pkg.Version
-                    } else {
-                        Install-WinGetPackage -Id $pkg.Id
-                    }
-                    Write-Host "    -> $($result.Status) v$($result.Version)"
-                    Log -Kind 'WinGetInstall' -Props @{
-                        Id      = $result.Id
-                        Status  = $result.Status
-                        Version = $result.Version
+        # Manifest-sourced systems skip winget installs entirely — the emulator binary
+        # is downloaded as an Artifact (Kind=Emulator) and resolved post-extraction.
+        if (-not $isManifestSource) {
+            foreach ($pkg in $system.Packages) {
+                try {
+                    Write-Host "  Install package: $($pkg.Id)$(if ($pkg.Version) { " ($($pkg.Version))" })"
+                    if ($PSCmdlet.ShouldProcess($pkg.Id, 'Install winget package')) {
+                        $result = if ($pkg.Version) {
+                            Install-WinGetPackage -Id $pkg.Id -Version $pkg.Version
+                        } else {
+                            Install-WinGetPackage -Id $pkg.Id
+                        }
+                        Write-Host "    -> $($result.Status) v$($result.Version)"
+                        Log -Kind 'WinGetInstall' -Props @{
+                            Id      = $result.Id
+                            Status  = $result.Status
+                            Version = $result.Version
+                        }
                     }
                 }
-            }
-            catch {
-                Write-Warning "  Package install failed: $($_.Exception.Message)"
-                $failures.Add(@{ System = $system.Name; Step = "InstallPackage:$($pkg.Id)"; Message = $_.Exception.Message })
-                $sysSucceeded = $false
+                catch {
+                    Write-Warning "  Package install failed: $($_.Exception.Message)"
+                    $failures.Add(@{ System = $system.Name; Step = "InstallPackage:$($pkg.Id)"; Message = $_.Exception.Message })
+                    $sysSucceeded = $false
+                }
             }
         }
 
-        $launcherPkgId = if ($system.Launcher.Kind -eq 'Libretro') { 'Libretro.RetroArch' } else { $system.Launcher.PackageId }
-        $launcherExe   = if ($system.Launcher.Kind -eq 'Libretro') { 'retroarch.exe' }          else { $system.Launcher.ExecutableName }
-        try {
-            $resolved = Resolve-EmulatorPath -PackageId $launcherPkgId -ExecutableName $launcherExe
-            $launcherPaths[$launcherPkgId] = $resolved
-            Write-Host "  Resolved $launcherPkgId -> $resolved"
-        }
-        catch {
-            Write-Warning "  Path resolution failed for ${launcherPkgId}: $($_.Exception.Message)"
-            $failures.Add(@{ System = $system.Name; Step = "ResolveLauncher:$launcherPkgId"; Message = $_.Exception.Message })
-            $sysSucceeded = $false
+        # Path resolution. WinGet-sourced systems resolve via registry now; Manifest-sourced
+        # systems get their path set later, after the Emulator artifact is extracted.
+        if (-not $isManifestSource) {
+            $launcherPkgId = if ($system.Launcher.Kind -eq 'Libretro') { 'Libretro.RetroArch' } else { $system.Launcher.PackageId }
+            $launcherExe   = if ($system.Launcher.Kind -eq 'Libretro') { 'retroarch.exe' }          else { $system.Launcher.ExecutableName }
+            try {
+                $resolved = Resolve-EmulatorPath -PackageId $launcherPkgId -ExecutableName $launcherExe
+                $launcherPaths[$launcherPkgId] = $resolved
+                Write-Host "  Resolved $launcherPkgId -> $resolved"
+            }
+            catch {
+                Write-Warning "  Path resolution failed for ${launcherPkgId}: $($_.Exception.Message)"
+                $failures.Add(@{ System = $system.Name; Step = "ResolveLauncher:$launcherPkgId"; Message = $_.Exception.Message })
+                $sysSucceeded = $false
+            }
         }
 
         $romDir = Join-Path $InstallRoot ('roms\' + $system.Name)
@@ -217,6 +248,40 @@ function Install-EmulationStation {
                         Write-Host "    -> ROM copied to $romDir"
                     }
                 }
+                'Emulator' {
+                    # Extract the emulator binary to <InstallRoot>\emulators\<system>\, then locate
+                    # the ExecutableName recursively and register in $launcherPaths.
+                    $emuDir = Join-Path $InstallRoot ('emulators\' + $system.Name)
+                    if (-not (Test-Path -LiteralPath $emuDir)) {
+                        New-Item -ItemType Directory -Path $emuDir -Force | Out-Null
+                    }
+                    try {
+                        if ($extension -in @('.zip', '.7z')) {
+                            Expand-VerifiedArchive -Path $cachePath -Destination $emuDir -Force
+                        } else {
+                            Copy-Item -LiteralPath $cachePath -Destination $emuDir -Force
+                        }
+                        Write-Host "    -> Emulator extracted to $emuDir"
+
+                        $exeName = $system.Launcher.ExecutableName
+                        $foundExe = Get-ChildItem -LiteralPath $emuDir -Filter $exeName -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+                        if ($foundExe) {
+                            $launcherPaths[$system.Launcher.PackageId] = $foundExe.FullName
+                            Write-Host "    Resolved $($system.Launcher.PackageId) -> $($foundExe.FullName)"
+                            Log -Kind 'ManifestEmulatorResolved' -Props @{ System = $system.Name; Path = $foundExe.FullName }
+                        } else {
+                            $msg = "Extracted but '$exeName' not found under '$emuDir'."
+                            Write-Warning "  $msg"
+                            $failures.Add(@{ System = $system.Name; Step = "ResolveLauncher:$($system.Launcher.PackageId)"; Message = $msg })
+                            $sysSucceeded = $false
+                        }
+                    }
+                    catch {
+                        Write-Warning "  Emulator extraction failed: $($_.Exception.Message)"
+                        $failures.Add(@{ System = $system.Name; Step = "ExtractEmulator:$downloadId"; Message = $_.Exception.Message })
+                        $sysSucceeded = $false
+                    }
+                }
                 default {
                     Write-Host "  (Kind '$($download.Kind)' not handled in M5)"
                 }
@@ -230,8 +295,11 @@ function Install-EmulationStation {
 
     if ($filtered.Count -gt 0 -and $launcherPaths.Count -gt 0) {
         $esSystemsPath = Join-Path $InstallRoot 'es_systems.cfg'
+        # Only render systems that successfully installed — one failed system (e.g., PS3 if its
+        # emulator binary couldn't be extracted) shouldn't block the entire config write.
+        $systemsForConfig = @($filtered | Where-Object { $installed -contains $_.Name })
         try {
-            Write-EsSystems -Systems $filtered -InstallRoot $InstallRoot -OutputPath $esSystemsPath -LauncherPaths $launcherPaths
+            Write-EsSystems -Systems $systemsForConfig -InstallRoot $InstallRoot -OutputPath $esSystemsPath -LauncherPaths $launcherPaths
             Write-Host "Wrote $esSystemsPath"
             Log -Kind 'ConfigRendered' -Props @{ Path = $esSystemsPath }
 

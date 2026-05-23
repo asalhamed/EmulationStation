@@ -51,12 +51,28 @@ function Expand-VerifiedArchive {
             }
         }
         '.7z' {
-            $sevenZip = Get-Command 7z -ErrorAction SilentlyContinue
-            if (-not $sevenZip) {
-                throw "7z.exe not found on PATH. Install with: winget install 7zip.7zip"
+            # Try PATH first, then known install locations. winget's NSIS installer for 7zip
+            # doesn't reliably add to PATH for in-process consumers.
+            $sevenZipExe = $null
+            $cmd = Get-Command 7z -ErrorAction SilentlyContinue
+            if ($cmd) {
+                $sevenZipExe = $cmd.Source
+            } else {
+                foreach ($candidate in @(
+                    "$env:ProgramFiles\7-Zip\7z.exe",
+                    "${env:ProgramFiles(x86)}\7-Zip\7z.exe"
+                )) {
+                    if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+                        $sevenZipExe = $candidate
+                        break
+                    }
+                }
             }
-            $args = @('x', "-o$Destination", '-y', $Path)
-            & $sevenZip.Source @args | Out-Null
+            if (-not $sevenZipExe) {
+                throw "7z.exe not found on PATH or in Program Files\7-Zip. Install with: winget install 7zip.7zip"
+            }
+            $sevenZipArgs = @('x', "-o$Destination", '-y', $Path)
+            & $sevenZipExe @sevenZipArgs | Out-Null
             if ($LASTEXITCODE -ne 0) {
                 throw "7z exited with code $LASTEXITCODE for $Path"
             }

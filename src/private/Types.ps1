@@ -14,6 +14,7 @@ enum DownloadKind {
     Rom
     Theme
     EmulatorAsset
+    Emulator         # An emulator binary (e.g., RPCS3 .7z) — extracted to <InstallRoot>\emulators\<system>\
 }
 
 class EmulatorSystem {

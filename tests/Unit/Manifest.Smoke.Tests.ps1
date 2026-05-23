@@ -8,16 +8,17 @@ Describe 'Shipped manifest — smoke checks' {
         $script:Manifest = Get-EmulationStationManifest
     }
 
-    It 'has exactly 13 systems (11 libretro from M3+M6 + 2 Standalone after pruning broken winget upstreams)' {
-        # PS3 (RPCS3.RPCS3 not in winget repo) and GC+Wii (DolphinEmulator.Dolphin's
-        # installer URL returns HTTP 403 — winget manifest points at a dead mirror)
-        # were removed 2026-05-23. Restore when winget manifests are fixed upstream.
-        $script:Manifest.Systems.Count | Should -Be 13
+    It 'has exactly 15 systems (12 libretro + 3 Standalone)' {
+        # 11 libretro from M3+M6 (nes, snes, gb, gbc, gba, megadrive, mastersystem, n64,
+        # atari2600, arcade, c64) + 1 MSX (fmsx) + 2 winget Standalone (psx, ps2) +
+        # 1 Manifest-source Standalone (ps3 via direct download).
+        # GC + Wii (Dolphin) still excluded — winget manifest URL returns HTTP 403.
+        $script:Manifest.Systems.Count | Should -Be 15
     }
 
-    It 'has exactly 2 Standalone systems with all required Launcher fields' {
+    It 'has exactly 3 Standalone systems with all required Launcher fields' {
         $standalones = @($script:Manifest.Systems | Where-Object { $_.Launcher.Kind -eq 'Standalone' })
-        $standalones.Count | Should -Be 2
+        $standalones.Count | Should -Be 3
         foreach ($s in $standalones) {
             $s.Launcher.PackageId       | Should -Not -BeNullOrEmpty -Because "system '$($s.Name)' missing PackageId"
             $s.Launcher.ExecutableName  | Should -Not -BeNullOrEmpty -Because "system '$($s.Name)' missing ExecutableName"
@@ -25,9 +26,9 @@ Describe 'Shipped manifest — smoke checks' {
         }
     }
 
-    It 'has exactly 11 Libretro systems' {
+    It 'has exactly 12 Libretro systems' {
         $libretros = @($script:Manifest.Systems | Where-Object { $_.Launcher.Kind -eq 'Libretro' })
-        $libretros.Count | Should -Be 11
+        $libretros.Count | Should -Be 12
     }
 
     It 'every system Artifact reference resolves to an entry in Downloads' {
@@ -40,10 +41,14 @@ Describe 'Shipped manifest — smoke checks' {
         }
     }
 
-    It 'every system declares at least one Package and one RomExtension' {
+    It 'every system declares at least one RomExtension; WinGet-sourced systems also have Packages' {
         foreach ($sys in $script:Manifest.Systems) {
-            $sys.Packages.Count      | Should -BeGreaterThan 0 -Because "system '$($sys.Name)' has no Packages"
             $sys.RomExtensions.Count | Should -BeGreaterThan 0 -Because "system '$($sys.Name)' has no RomExtensions"
+            # Manifest-sourced Standalone systems (e.g., PS3) skip winget entirely.
+            $source = if ($sys.Launcher.Source) { $sys.Launcher.Source } else { 'WinGet' }
+            if ($source -eq 'WinGet') {
+                $sys.Packages.Count | Should -BeGreaterThan 0 -Because "WinGet-sourced system '$($sys.Name)' has no Packages"
+            }
         }
     }
 

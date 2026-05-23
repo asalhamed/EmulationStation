@@ -6,6 +6,11 @@
             Sha256 = '93b58f5a0778a1680d181d9de3937daa44d18ffef600d00133533eb83ef2d9d8'
             Kind   = 'LibretroCore'
         }
+        'fmsx-core' = @{
+            Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/fmsx_libretro.dll.zip'
+            Sha256 = '5a7ab3b65baa07b1e4553e243eea7e9ec5db8f36cb81d648981588af39222510'
+            Kind   = 'LibretroCore'
+        }
         'gambatte-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/gambatte_libretro.dll.zip'
             Sha256 = 'ed4f9a18795a060970b849d48b3f537af8b1295dcd8e1b245825e04ae6582090'
@@ -48,6 +53,11 @@
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/parallel_n64_libretro.dll.zip'
             Sha256 = '82d61c09c655770d8efe8228661986ad407024d023637c11f95d1fafd385c855'
             Kind   = 'LibretroCore'
+        }
+        'rpcs3-binary' = @{
+            Url    = 'https://github.com/RPCS3/rpcs3-binaries-win/releases/download/build-67464f97df8679d5d540256987551f34fe00d4cc/rpcs3-v0.0.40-19389-67464f97_win64_msvc.7z'
+            Sha256 = '49a71725ca5eff3265f643ac36dbaa0d3beacf144252795b58318a1cd1f222bf'
+            Kind   = 'Emulator'
         }
         'snes-nwarp' = @{
             Url    = 'https://github.com/OpenEmu/OpenEmu-Update/raw/master/Homebrew/SNES/N-Warp%20Daisakusen/N-Warp%20Daisakusen%20V1.1.smc'

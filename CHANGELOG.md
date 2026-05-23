@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### MSX + PS3 added; new Launcher.Source = 'Manifest' for non-winget binaries
+- **MSX** (Microsoft MSX) — standard libretro entry, `fmsx_libretro.dll`. System BIOS ROMs (MSX2.ROM etc.) are BYO, documented in `Notes`.
+- **PS3** (Sony PlayStation 3) — re-added via new schema field `Launcher.Source = 'Manifest'`. Bypasses winget entirely; the emulator binary is downloaded as an Artifact (`Kind = 'Emulator'`) and extracted to `<InstallRoot>\emulators\<system>\`. RPCS3 build pinned to GitHub release `build-67464f97df8679d5d540256987551f34fe00d4cc` (`rpcs3-v0.0.40-19389-67464f97_win64_msvc.7z`, hash `49a71725…`); maintainer bumps URL + re-runs `Update-DownloadHashes` for newer builds.
+- **New `DownloadKind = 'Emulator'`** for binaries that get extracted under `<InstallRoot>\emulators\<system>\`. `Place-Artifact` handles extraction + recursive `Get-ChildItem` to locate the `ExecutableName`. Path is registered in `$launcherPaths[<Launcher.PackageId>]` so `Build-LauncherCommand` finds it.
+- **Schema validation** for `Launcher.Source`: must be `'WinGet'` (default) or `'Manifest'`. When `'Manifest'`, requires at least one `Artifacts` entry referencing a known download.
+- **7-Zip auto-install + path fallback** — orchestrator scans downloads for `.7z` extensions; if any and 7z isn't on PATH, installs `7zip.7zip` via winget before the per-system loop. `Expand-VerifiedArchive` also falls back to `$env:ProgramFiles\7-Zip\7z.exe` / `${env:ProgramFiles(x86)}\7-Zip\7z.exe` for cases where PATH refresh doesn't propagate to the in-process command lookup (which we hit on the first MSX/PS3 run).
+- **`Write-EsSystems` is now called with only successfully-installed systems** — previously a single system whose path resolution failed (e.g., PS3 if extraction errored) would throw inside `Build-LauncherCommand` and prevent any `es_systems.cfg` write at all. Now partial-success runs still produce a valid config with all the systems that did work.
+- Manifest counts: 11 Libretro + 1 new (MSX) + 2 WinGet Standalone + 1 new Manifest Standalone = **15 systems**, **15 downloads**.
+- Smoke tests updated: 15 systems, 12 Libretro, 3 Standalone. Per-system invariant tightened to "WinGet-sourced systems must declare Packages; Manifest-sourced systems may have empty Packages." 115 unit pass.
+- End-to-end install verified on Windows 11 Pro: **0 failures**, 15 systems, RPCS3 v0.0.40 extracted to `…\.emulationstation\emulators\ps3\rpcs3.exe`. Wall clock 41 seconds on the cached re-run.
+
 ### ES-DE frontend included with full linkage
 - **`Install-EmulationStation` now installs the ES-DE frontend by default.** New parameter `-SkipFrontend` opts out. Defaults: `-FrontendPackageId 'ES-DE.EmulationStation-DE'`, `-FrontendExecutableName 'ES-DE.exe'`.
 - After the per-system loop and config renders, the orchestrator: (1) installs `ES-DE.EmulationStation-DE` via winget (idempotent), (2) resolves `ES-DE.exe` via `Resolve-EmulatorPath`, (3) auto-sets `$EmulationStationExe` for shortcut creation if the caller didn't override, (4) sets `$frontendArgs = "--home <InstallRoot>"`.

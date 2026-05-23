@@ -45,7 +45,7 @@ function Resolve-Manifest {
         throw "downloads.psd1: missing required key 'Downloads'."
     }
 
-    $validDownloadKinds = @('LibretroCore', 'Rom', 'Theme', 'EmulatorAsset')
+    $validDownloadKinds = @('LibretroCore', 'Rom', 'Theme', 'EmulatorAsset', 'Emulator')
     $downloadIds = [System.Collections.Generic.HashSet[string]]::new()
     $downloadList = [System.Collections.Generic.List[DownloadSpec]]::new()
 
@@ -143,6 +143,25 @@ function Resolve-Manifest {
             foreach ($req in @('PackageId', 'ExecutableName', 'CommandTemplate')) {
                 if (-not $entry.Launcher.$req) {
                     throw "${loc}: Launcher.$req is required when Kind='Standalone'"
+                }
+            }
+            # Source defaults to 'WinGet'. 'Manifest' means the emulator binary is downloaded as
+            # an Artifact (Kind=Emulator) and the PackageId is just an internal lookup key.
+            $source = if ($entry.Launcher.Source) { $entry.Launcher.Source } else { 'WinGet' }
+            if ($source -notin @('WinGet', 'Manifest')) {
+                throw "${loc}: Launcher.Source must be 'WinGet' or 'Manifest' (got '$source')"
+            }
+            if ($source -eq 'Manifest') {
+                $hasEmulatorArtifact = $false
+                if ($entry.Artifacts) {
+                    foreach ($v in $entry.Artifacts.Values) {
+                        # We can't strictly require Kind='Emulator' here without cross-referencing
+                        # Downloads (done above), but the orchestrator will fail loudly if none exists.
+                        if ($downloadIds.Contains($v)) { $hasEmulatorArtifact = $true; break }
+                    }
+                }
+                if (-not $hasEmulatorArtifact) {
+                    throw "${loc}: Launcher.Source='Manifest' requires at least one Artifacts entry referencing a Download of Kind='Emulator'"
                 }
             }
         }
