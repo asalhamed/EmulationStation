@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Revert MSX to fmsx core; bluemsx swap was incorrect
+- **Symptom**: MSX ROMs imported by the user (e.g., Castle Excellent .rom) wouldn't run after the BYO fix. bluemsx_libretro.dll was on disk but the system\ dir was empty (cbios-msx SourceForge SSL kept failing).
+- **Real root cause**: my earlier "switch to bluemsx for C-BIOS compatibility" was **wrong**. bluemsx libretro doesn't accept bare C-BIOS files — it needs the full bluemsx-system tree (`Machines/<name>/config.xml` + ROM files per machine), which is not what cbios-0.30.zip provides. Even if the SourceForge SSL had cooperated, the resulting setup wouldn't have worked.
+- **Fix**: revert MSX system to `fmsx_libretro.dll`. fmsx has built-in MSX fallback and runs many cartridge ROMs (.rom) without external BIOS at all. Disk-based games (.dsk) and BIOS-dependent titles still need user-supplied MSX2.ROM / DISK.ROM in `<retroarch>\system\` — documented in the system's Notes.
+- Manifest: replaced `bluemsx-core` + `cbios-msx` download entries with a single `fmsx-core`. The bluemsx and cbios placeholders in CHANGELOG's earlier "BYO fix" entry are obsolete (still listed there for historical accuracy).
+- `es_systems.cfg` re-rendered to point at `fmsx_libretro.dll`. Both fmsx and bluemsx DLLs remain on disk from prior runs (harmless leftover; bluemsx will be ignored).
+- 19 download entries (was 20); 16 systems unchanged.
+
 ### Standalone MAME (current version) + 2 public-domain arcade ROMs
 - **New `mame` system** — distinct from existing `arcade` (libretro mame2010 for vintage ROM sets). `mame` uses current MAME 0.287 via `Source = 'Manifest'`, downloads the official `mame0287b_x64.exe` from `github.com/mamedev/mame/releases` (101 MB SFX, extracts to ~368 MB), resolves `mame.exe` recursively. Command template: `"%EXE%" -rompath "%ROMDIR%" "%BASENAME%"`.
 - **`.exe` arrivals now treated as 7z self-extracting archives** in `Expand-VerifiedArchive` and the orchestrator's `Emulator` case. 7z handles SFX archives natively; if the file isn't actually SFX, 7z fails with a clear error. Required for MAME's `.exe` distribution; helpful for future emulators that ship via SFX.

@@ -150,16 +150,13 @@
             Name          = 'msx'
             FullName      = 'Microsoft MSX'
             RomExtensions = @('.rom', '.mx1', '.mx2', '.col', '.dsk', '.cas', '.m3u')
-            Notes         = 'Uses bluemsx core + C-BIOS (Apache-licensed open replacement BIOS). User can optionally drop original Microsoft MSX BIOS files in the RetroArch system dir for higher compatibility.'
+            Notes         = 'Uses fmsx core. Many MSX cartridge ROMs (.rom) boot without external BIOS because fmsx has built-in fallback. Disk-based games (.dsk) and some BIOS-dependent titles may need user-supplied MSX2.ROM / DISK.ROM in the RetroArch system dir. The earlier attempt to ship bluemsx + C-BIOS was reverted because bluemsx actually needs a full bluemsx-system Machines/ tree (not just bare C-BIOS files) which we do not redistribute.'
             Launcher      = @{
                 Kind         = 'Libretro'
-                LibretroCore = 'bluemsx_libretro.dll'
+                LibretroCore = 'fmsx_libretro.dll'
             }
             Packages      = @('Libretro.RetroArch')
-            Artifacts     = @{
-                Core       = 'bluemsx-core'
-                SystemFile = 'cbios-msx'
-            }
+            Artifacts     = @{ Core = 'fmsx-core' }
         }
 
         # ---- Standalone emulators (M7) ----

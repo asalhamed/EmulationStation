@@ -7,19 +7,14 @@
             Kind   = 'Rom'
             System = 'atari2600'
         }
-        'bluemsx-core' = @{
-            Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/bluemsx_libretro.dll.zip'
-            Sha256 = '72a111ca95e84f23ce8cc4d1afded0acf314ee03839e81aee55ce6d84d55ca40'
-            Kind   = 'LibretroCore'
-        }
-        'cbios-msx' = @{
-            Url    = 'https://sourceforge.net/projects/cbios/files/cbios/0.30/cbios-0.30.zip/download'
-            Sha256 = '0000000000000000000000000000000000000000000000000000000000000000'
-            Kind   = 'SystemFile'
-        }
         'fceumm-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/fceumm_libretro.dll.zip'
             Sha256 = '93b58f5a0778a1680d181d9de3937daa44d18ffef600d00133533eb83ef2d9d8'
+            Kind   = 'LibretroCore'
+        }
+        'fmsx-core' = @{
+            Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/fmsx_libretro.dll.zip'
+            Sha256 = '0000000000000000000000000000000000000000000000000000000000000000'
             Kind   = 'LibretroCore'
         }
         'gambatte-core' = @{
@@ -50,18 +45,16 @@
             Kind   = 'Emulator'
         }
         'mame-gridlee' = @{
-            Url          = 'https://www.mamedev.org/roms/gridlee/gridlee.zip'
-            Sha256       = 'df977ceba0ae1c8d0ecf489ae8423390ff5c7c76ce95f5ee6ba9bc892b18056e'
-            Kind         = 'Rom'
-            System       = 'mame'
-            KeepArchive  = $true   # MAME reads ROM sets as .zip archives; do not extract
+            Url    = 'https://www.mamedev.org/roms/gridlee/gridlee.zip'
+            Sha256 = 'df977ceba0ae1c8d0ecf489ae8423390ff5c7c76ce95f5ee6ba9bc892b18056e'
+            Kind   = 'Rom'
+            System = 'mame'
         }
         'mame-robby' = @{
-            Url          = 'https://www.mamedev.org/roms/robby/robby.zip'
-            Sha256       = 'd3f7ae3afeeedb7d2476ea05e326a6a6f6e851c969f07a1de36133fcb4d0a8d8'
-            Kind         = 'Rom'
-            System       = 'mame'
-            KeepArchive  = $true
+            Url    = 'https://www.mamedev.org/roms/robby/robby.zip'
+            Sha256 = 'd3f7ae3afeeedb7d2476ea05e326a6a6f6e851c969f07a1de36133fcb4d0a8d8'
+            Kind   = 'Rom'
+            System = 'mame'
         }
         'mame2010-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/mame2010_libretro.dll.zip'
