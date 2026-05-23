@@ -209,15 +209,33 @@ function Install-EmulationStation {
                 continue
             }
 
-            $extension = [System.IO.Path]::GetExtension($download.Url.Split('?')[0])
+            # Source URL or repo-bundled asset?
+            $sourceForExt = if ($download.LocalPath) { $download.LocalPath } else { $download.Url.Split('?')[0] }
+            $extension = [System.IO.Path]::GetExtension($sourceForExt)
             $cachePath = Join-Path $CacheRoot ($downloadId + $extension)
 
             try {
-                Write-Host "  Download $downloadId"
-                Get-VerifiedDownload -Uri $download.Url -Destination $cachePath -ExpectedSha256 $download.Sha256 | Out-Null
+                if ($download.LocalPath) {
+                    # Copy from repo asset, hash-verify. ManifestRoot's parent is the repo/module root.
+                    $repoRoot = Split-Path -Parent $ManifestRoot
+                    $localSrc = Join-Path $repoRoot $download.LocalPath
+                    Write-Host "  Bundle  $downloadId  <- $($download.LocalPath)"
+                    if (-not (Test-Path -LiteralPath $localSrc -PathType Leaf)) {
+                        throw "LocalPath '$($download.LocalPath)' resolves to '$localSrc' which does not exist."
+                    }
+                    Copy-Item -LiteralPath $localSrc -Destination $cachePath -Force
+                    $actual = (Get-FileHash -LiteralPath $cachePath -Algorithm SHA256).Hash.ToLowerInvariant()
+                    if ($actual -ne $download.Sha256) {
+                        Remove-Item -LiteralPath $cachePath -Force -ErrorAction SilentlyContinue
+                        throw "Bundle hash mismatch for ${downloadId}: expected $($download.Sha256), got $actual."
+                    }
+                } else {
+                    Write-Host "  Download $downloadId"
+                    Get-VerifiedDownload -Uri $download.Url -Destination $cachePath -ExpectedSha256 $download.Sha256 | Out-Null
+                }
             }
             catch {
-                Write-Warning "  Download failed for ${downloadId}: $($_.Exception.Message)"
+                Write-Warning "  Acquire failed for ${downloadId}: $($_.Exception.Message)"
                 $failures.Add(@{ System = $system.Name; Step = "Download:$downloadId"; Message = $_.Exception.Message })
                 continue
             }

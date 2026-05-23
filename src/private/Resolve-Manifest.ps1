@@ -59,11 +59,20 @@ function Resolve-Manifest {
         if (-not $downloadIds.Add($key)) {
             throw "${loc}: duplicate key"
         }
-        if (-not $entry.Url) {
-            throw "${loc}: Url is required"
+        # Either Url (network) or LocalPath (repo-bundled asset) — exactly one is required.
+        $hasUrl   = -not [string]::IsNullOrWhiteSpace($entry.Url)
+        $hasLocal = -not [string]::IsNullOrWhiteSpace($entry.LocalPath)
+        if (-not $hasUrl -and -not $hasLocal) {
+            throw "${loc}: must specify either Url or LocalPath"
         }
-        if ($entry.Url -notmatch '^https://') {
+        if ($hasUrl -and $hasLocal) {
+            throw "${loc}: cannot have both Url and LocalPath"
+        }
+        if ($hasUrl -and $entry.Url -notmatch '^https://') {
             throw "${loc}: Url must start with https:// (got '$($entry.Url)')"
+        }
+        if ($hasLocal -and ($entry.LocalPath -match '^/' -or $entry.LocalPath -match '^[A-Za-z]:' -or $entry.LocalPath -match '\.\.')) {
+            throw "${loc}: LocalPath must be a relative path under the module root, no '..' traversal (got '$($entry.LocalPath)')"
         }
         if (-not $entry.Sha256) {
             throw "${loc}: Sha256 is required"
@@ -84,6 +93,7 @@ function Resolve-Manifest {
         $d = [DownloadSpec]::new()
         $d.Id           = $key
         $d.Url          = $entry.Url
+        $d.LocalPath    = $entry.LocalPath
         $d.Sha256       = $entry.Sha256.ToLowerInvariant()
         $d.Kind         = $entry.Kind
         $d.System       = $entry.System

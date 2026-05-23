@@ -9,7 +9,8 @@ Describe 'Shipped manifest — smoke checks' {
     }
 
     It 'has exactly 16 systems (12 libretro + 4 Standalone)' {
-        # 11 libretro from M3+M6 + 1 MSX (bluemsx) + 2 winget Standalone (psx, ps2)
+        # 11 libretro from M3+M6 + 1 MSX (fmsx, with bundled BIOS at assets/msx-bios.zip)
+        # + 2 winget Standalone (psx, ps2)
         # + 2 Manifest-source Standalone (ps3 via RPCS3, mame via current MAME).
         # GC + Wii (Dolphin) still excluded — winget manifest URL returns HTTP 403.
         $script:Manifest.Systems.Count | Should -Be 16

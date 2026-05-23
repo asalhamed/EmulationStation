@@ -33,7 +33,8 @@ class EmulatorSystem {
 
 class DownloadSpec {
     [string]       $Id
-    [string]       $Url
+    [string]       $Url           # mutually exclusive with LocalPath
+    [string]       $LocalPath     # relative to module root; bypasses network. Hash still verified.
     [string]       $Sha256
     [DownloadKind] $Kind
     [string]       $System

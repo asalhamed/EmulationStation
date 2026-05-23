@@ -150,13 +150,16 @@
             Name          = 'msx'
             FullName      = 'Microsoft MSX'
             RomExtensions = @('.rom', '.mx1', '.mx2', '.col', '.dsk', '.cas', '.m3u')
-            Notes         = 'Uses fmsx core. Run tests/fetch-cbios.ps1 once to populate the RetroArch system dir with C-BIOS (Apache-licensed open MSX BIOS replacement, pulled from the openMSX 21.0 release bundle). With C-BIOS in place fmsx boots MSX1/MSX2/MSX2+ cartridge ROMs and most disk-based games. Original Microsoft BIOS files (if you have them legally) can replace the C-BIOS files for higher compat.'
+            Notes         = 'Uses fmsx libretro core. MSX BIOS bundle (assets/msx-bios.zip — C-BIOS + Microsoft MSX-DOS2/KANJI/FMPAC/PAINTER ROMs) is shipped with the repo and copied into <retroarch>\system\ during install. Verified working on Castle Excellent (ASCII 1986) after the BIOS landed. Reverted from openMSX 2026-05-24 once BIOS was in place — fmsx is leaner and works.'
             Launcher      = @{
                 Kind         = 'Libretro'
                 LibretroCore = 'fmsx_libretro.dll'
             }
             Packages      = @('Libretro.RetroArch')
-            Artifacts     = @{ Core = 'fmsx-core' }
+            Artifacts     = @{
+                Core       = 'fmsx-core'
+                SystemFile = 'msx-bios'
+            }
         }
 
         # ---- Standalone emulators (M7) ----

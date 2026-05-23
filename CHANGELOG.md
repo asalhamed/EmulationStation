@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### MSX BIOS bundled in repo; new `LocalPath` download source
+- **MSX BIOS pack shipped in-repo** at `assets/msx-bios.zip` (305 KB, 9 files: C-BIOS MSX1/MSX2/MSX2+ ROMs + Microsoft MSX-DOS2 + KANJI + FMPAC + PAINTER). Hash pinned in manifest. Verified working with Castle Excellent (ASCII 1986) after the BIOS landed.
+- **New `LocalPath` field on download entries** — alternative to `Url`. Orchestrator reads from `<module-root>/<LocalPath>` instead of the network. Hash is still verified the same way. Manifest validates: every download has exactly one of `Url` (https://) or `LocalPath` (relative, no `..` traversal).
+- **MSX system reverted to fmsx libretro** now that the BIOS is reliably installed. openMSX experiment (and its `openmsx-binary` download entry) removed — fmsx is leaner and works once BIOS is in place. The intermediate openMSX swap was a workaround for the missing BIOS, not a fix.
+- Orchestrator: when a download has `LocalPath`, copies the file from the repo asset to the cache + hash-verifies; else continues to use `Get-VerifiedDownload` over the network.
+- 19 download entries (was 20: removed `openmsx-binary`; added `msx-bios` + restored `fmsx-core`; net -1). 16 systems unchanged.
+- Smoke tests reverted to 12 Libretro / 4 Standalone (MSX is back in Libretro).
+- 115 unit tests pass.
+
 ### MSX BIOS — `tests/fetch-cbios.ps1` helper installs C-BIOS into RetroArch system dir
 - New one-shot helper script `tests/fetch-cbios.ps1`. Downloads the openMSX 21.0 Windows binary bundle from GitHub (13 MB), extracts the C-BIOS `*.rom` files from its `share/systemroms/`, and copies them into `C:\RetroArch-Win64\system\` with the names fmsx expects: `MSX.ROM`, `MSX2.ROM`, `MSX2EXT.ROM`, `MSX2P.ROM`, `MSX2PEXT.ROM` (plus optional logo + music ROMs).
 - **Why openMSX bundle instead of standalone C-BIOS zip**: SourceForge's `cbios-0.30.zip` URL has been intermittently SSL-failing from this network all session — even when its HEAD returns 200, the `Invoke-WebRequest`/`curl` GET returns either an HTML mirror page or fails handshake. GitHub-hosted openMSX is reliable and ships the same C-BIOS files inside its bundle.
