@@ -82,11 +82,12 @@ function Resolve-Manifest {
         }
 
         $d = [DownloadSpec]::new()
-        $d.Id     = $key
-        $d.Url    = $entry.Url
-        $d.Sha256 = $entry.Sha256.ToLowerInvariant()
-        $d.Kind   = $entry.Kind
-        $d.System = $entry.System
+        $d.Id           = $key
+        $d.Url          = $entry.Url
+        $d.Sha256       = $entry.Sha256.ToLowerInvariant()
+        $d.Kind         = $entry.Kind
+        $d.System       = $entry.System
+        $d.KeepArchive  = [bool]$entry.KeepArchive
         $downloadList.Add($d) | Out-Null
     }
 

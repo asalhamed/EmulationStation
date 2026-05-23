@@ -50,6 +50,27 @@ function Expand-VerifiedArchive {
                 [System.IO.Compression.ZipFile]::ExtractToDirectory($Path, $Destination)
             }
         }
+        '.exe' {
+            # Treated as a 7-Zip self-extracting archive (most Windows installer .exe's that ship
+            # an emulator binary are SFX 7z — e.g. mame<ver>b_x64.exe). 7z handles SFX archives
+            # natively. If the file isn't actually an SFX archive, 7z will fail with a clear error.
+            $sevenZipExe = $null
+            $cmd = Get-Command 7z -ErrorAction SilentlyContinue
+            if ($cmd) { $sevenZipExe = $cmd.Source }
+            else {
+                foreach ($candidate in @("$env:ProgramFiles\7-Zip\7z.exe", "${env:ProgramFiles(x86)}\7-Zip\7z.exe")) {
+                    if (Test-Path -LiteralPath $candidate -PathType Leaf) { $sevenZipExe = $candidate; break }
+                }
+            }
+            if (-not $sevenZipExe) {
+                throw "7z.exe not found (needed for .exe SFX extraction). Install with: winget install 7zip.7zip"
+            }
+            $sevenZipArgs = @('x', "-o$Destination", '-y', $Path)
+            & $sevenZipExe @sevenZipArgs | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                throw "7z exited with code $LASTEXITCODE extracting SFX $Path"
+            }
+        }
         '.7z' {
             # Try PATH first, then known install locations. winget's NSIS installer for 7zip
             # doesn't reliably add to PATH for in-process consumers.
@@ -78,7 +99,7 @@ function Expand-VerifiedArchive {
             }
         }
         default {
-            throw "Unsupported archive extension: '$ext' (path: $Path). Supported: .zip, .7z"
+            throw "Unsupported archive extension: '$ext' (path: $Path). Supported: .zip, .7z, .exe (SFX 7z)"
         }
     }
 }

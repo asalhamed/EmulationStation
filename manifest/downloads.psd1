@@ -44,6 +44,25 @@
             Kind   = 'Rom'
             System = 'megadrive'
         }
+        'mame-binary' = @{
+            Url    = 'https://github.com/mamedev/mame/releases/download/mame0287/mame0287b_x64.exe'
+            Sha256 = '68cdaf6d48213c6f3d0f7fa7f2733db46f74e400ad66db2d8a8d777430a42fb9'
+            Kind   = 'Emulator'
+        }
+        'mame-gridlee' = @{
+            Url          = 'https://www.mamedev.org/roms/gridlee/gridlee.zip'
+            Sha256       = 'df977ceba0ae1c8d0ecf489ae8423390ff5c7c76ce95f5ee6ba9bc892b18056e'
+            Kind         = 'Rom'
+            System       = 'mame'
+            KeepArchive  = $true   # MAME reads ROM sets as .zip archives; do not extract
+        }
+        'mame-robby' = @{
+            Url          = 'https://www.mamedev.org/roms/robby/robby.zip'
+            Sha256       = 'd3f7ae3afeeedb7d2476ea05e326a6a6f6e851c969f07a1de36133fcb4d0a8d8'
+            Kind         = 'Rom'
+            System       = 'mame'
+            KeepArchive  = $true
+        }
         'mame2010-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/mame2010_libretro.dll.zip'
             Sha256 = '855288fe89668c1d4c63a92398586298c85422953d4b3e25851c2fc2fccfb367'

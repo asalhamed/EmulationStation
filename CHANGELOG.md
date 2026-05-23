@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Standalone MAME (current version) + 2 public-domain arcade ROMs
+- **New `mame` system** — distinct from existing `arcade` (libretro mame2010 for vintage ROM sets). `mame` uses current MAME 0.287 via `Source = 'Manifest'`, downloads the official `mame0287b_x64.exe` from `github.com/mamedev/mame/releases` (101 MB SFX, extracts to ~368 MB), resolves `mame.exe` recursively. Command template: `"%EXE%" -rompath "%ROMDIR%" "%BASENAME%"`.
+- **`.exe` arrivals now treated as 7z self-extracting archives** in `Expand-VerifiedArchive` and the orchestrator's `Emulator` case. 7z handles SFX archives natively; if the file isn't actually SFX, 7z fails with a clear error. Required for MAME's `.exe` distribution; helpful for future emulators that ship via SFX.
+- **`%ROMDIR%` substitution** added to `Build-LauncherCommand` — Standalone `CommandTemplate` strings can now reference `%ROMDIR%` and we substitute it with `<InstallRoot>\roms\<system.Name>`. MAME needs this for `-rompath`. `%EXE%` substitution unchanged.
+- **New manifest field `KeepArchive` on Download entries** — when true (default false), the ROM-kind file is **copied** (not extracted) under its URL basename. MAME reads ROM sets as `.zip` archives, so `gridlee.zip` must stay `gridlee.zip`, not get expanded into loose `.bin` files. `DownloadSpec` class gained the property; `Resolve-Manifest` reads it; `Place-Artifact` honors it.
+- **Two public-domain MAME ROMs bundled** from mamedev.org/roms/:
+  - **Gridlee** (Videa, 1983) — released to public domain by Atari Games
+  - **Robby Roto** (Bally Midway, 1981) — released to public domain by Williams/Midway
+- 16 systems total (was 15); 20 download entries (was 17). Manifest smoke counts updated: 16 systems / 12 Libretro / 4 Standalone.
+- **End-to-end install on Windows 11 Pro**: 16/16 systems landed, MAME ROMs and binary all in place, 2 placeholder failures (cbios-msx + ps3-firmware) both network-conditional. Wall clock 2m 27s.
+
 ### "Fix all BYO" — system BIOS + auto-firmware + more bundled homebrew
 - **Two new `DownloadKind` values**:
   - `SystemFile` — extracted to `<retroarch>\system\`, where libretro cores look for BIOS files. Place-Artifact handles `.zip`/`.7z` extraction + bare-file copy.

@@ -8,17 +8,16 @@ Describe 'Shipped manifest — smoke checks' {
         $script:Manifest = Get-EmulationStationManifest
     }
 
-    It 'has exactly 15 systems (12 libretro + 3 Standalone)' {
-        # 11 libretro from M3+M6 (nes, snes, gb, gbc, gba, megadrive, mastersystem, n64,
-        # atari2600, arcade, c64) + 1 MSX (fmsx) + 2 winget Standalone (psx, ps2) +
-        # 1 Manifest-source Standalone (ps3 via direct download).
+    It 'has exactly 16 systems (12 libretro + 4 Standalone)' {
+        # 11 libretro from M3+M6 + 1 MSX (bluemsx) + 2 winget Standalone (psx, ps2)
+        # + 2 Manifest-source Standalone (ps3 via RPCS3, mame via current MAME).
         # GC + Wii (Dolphin) still excluded — winget manifest URL returns HTTP 403.
-        $script:Manifest.Systems.Count | Should -Be 15
+        $script:Manifest.Systems.Count | Should -Be 16
     }
 
-    It 'has exactly 3 Standalone systems with all required Launcher fields' {
+    It 'has exactly 4 Standalone systems with all required Launcher fields' {
         $standalones = @($script:Manifest.Systems | Where-Object { $_.Launcher.Kind -eq 'Standalone' })
-        $standalones.Count | Should -Be 3
+        $standalones.Count | Should -Be 4
         foreach ($s in $standalones) {
             $s.Launcher.PackageId       | Should -Not -BeNullOrEmpty -Because "system '$($s.Name)' missing PackageId"
             $s.Launcher.ExecutableName  | Should -Not -BeNullOrEmpty -Because "system '$($s.Name)' missing ExecutableName"

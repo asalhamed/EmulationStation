@@ -244,7 +244,15 @@ function Install-EmulationStation {
                     }
                 }
                 'Rom' {
-                    if ($extension -in @('.zip', '.7z')) {
+                    # KeepArchive: do NOT extract, copy file under its URL basename. Used for emulators
+                    # like MAME that read ROM-set .zip archives directly (gridlee.zip stays gridlee.zip).
+                    if ($download.KeepArchive) {
+                        $urlBasename = [System.IO.Path]::GetFileName($download.Url.Split('?')[0])
+                        $destFile = Join-Path $romDir $urlBasename
+                        Copy-Item -LiteralPath $cachePath -Destination $destFile -Force
+                        Write-Host "    -> ROM archive copied as $destFile (KeepArchive)"
+                    }
+                    elseif ($extension -in @('.zip', '.7z')) {
                         try {
                             Expand-VerifiedArchive -Path $cachePath -Destination $romDir -Force
                             Write-Host "    -> ROM extracted to $romDir"
@@ -262,12 +270,13 @@ function Install-EmulationStation {
                 'Emulator' {
                     # Extract the emulator binary to <InstallRoot>\emulators\<system>\, then locate
                     # the ExecutableName recursively and register in $launcherPaths.
+                    # .exe arrivals are treated as 7z SFX archives (MAME's mame<ver>b_x64.exe is one).
                     $emuDir = Join-Path $InstallRoot ('emulators\' + $system.Name)
                     if (-not (Test-Path -LiteralPath $emuDir)) {
                         New-Item -ItemType Directory -Path $emuDir -Force | Out-Null
                     }
                     try {
-                        if ($extension -in @('.zip', '.7z')) {
+                        if ($extension -in @('.zip', '.7z', '.exe')) {
                             Expand-VerifiedArchive -Path $cachePath -Destination $emuDir -Force
                         } else {
                             Copy-Item -LiteralPath $cachePath -Destination $emuDir -Force

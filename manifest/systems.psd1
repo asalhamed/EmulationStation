@@ -192,6 +192,25 @@
             Artifacts     = @{}
         }
         @{
+            Name          = 'mame'
+            FullName      = 'Arcade (Current MAME)'
+            RomExtensions = @('.zip', '.7z', '.chd')
+            Notes         = 'Standalone MAME (current version) — different ROM set than the libretro mame2010 ''arcade'' system. Bundled with two public-domain Atari Games releases: Gridlee + Robby Roto.'
+            Launcher      = @{
+                Kind            = 'Standalone'
+                Source          = 'Manifest'
+                PackageId       = 'MAME'                 # logical key (not a winget id)
+                ExecutableName  = 'mame.exe'
+                CommandTemplate = '"%EXE%" -rompath "%ROMDIR%" "%BASENAME%"'
+            }
+            Packages      = @()
+            Artifacts     = @{
+                Emulator     = 'mame-binary'
+                HomebrewA    = 'mame-gridlee'
+                HomebrewB    = 'mame-robby'
+            }
+        }
+        @{
             Name          = 'ps3'
             FullName      = 'Sony PlayStation 3'
             RomExtensions = @('.iso', '.pkg', '.bin', '.elf', '.self')

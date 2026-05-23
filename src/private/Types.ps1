@@ -37,6 +37,7 @@ class DownloadSpec {
     [string]       $Sha256
     [DownloadKind] $Kind
     [string]       $System
+    [bool]         $KeepArchive    # if true, ROM-kind download is copied (not extracted) under its URL basename
 }
 
 

@@ -120,5 +120,11 @@ function Build-LauncherCommand {
         Join-Path $exeDirOrPath $System.Launcher.ExecutableName
     }
 
-    return $System.Launcher.CommandTemplate -replace '%EXE%', $exePath
+    # Per-system ROM directory (used by emulators that take a -rompath/folder argument like MAME).
+    $romDir = Join-Path $InstallRoot ('roms\' + $System.Name)
+
+    $cmd = $System.Launcher.CommandTemplate
+    $cmd = $cmd -replace '%EXE%',    $exePath
+    $cmd = $cmd -replace '%ROMDIR%', $romDir
+    return $cmd
 }
