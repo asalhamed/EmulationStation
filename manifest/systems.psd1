@@ -87,12 +87,16 @@
             Name          = 'mastersystem'
             FullName      = 'Sega Master System'
             RomExtensions = @('.sms')
+            Notes         = 'Bruce Lee (homebrew port) used as the bundled ROM.'
             Launcher      = @{
                 Kind         = 'Libretro'
                 LibretroCore = 'genesis_plus_gx_libretro.dll'
             }
             Packages      = @('Libretro.RetroArch')
-            Artifacts     = @{ Core = 'genesis-plus-gx-core' }
+            Artifacts     = @{
+                Core     = 'genesis-plus-gx-core'
+                Homebrew = 'sms-brucelee'
+            }
         }
         @{
             Name          = 'n64'
@@ -109,12 +113,16 @@
             Name          = 'atari2600'
             FullName      = 'Atari 2600'
             RomExtensions = @('.a26', '.bin')
+            Notes         = 'Halo 2600 (homebrew by Ed Fries) used as the bundled ROM.'
             Launcher      = @{
                 Kind         = 'Libretro'
                 LibretroCore = 'stella_libretro.dll'
             }
             Packages      = @('Libretro.RetroArch')
-            Artifacts     = @{ Core = 'stella-core' }
+            Artifacts     = @{
+                Core     = 'stella-core'
+                Homebrew = 'atari2600-halo'
+            }
         }
         @{
             Name          = 'arcade'
@@ -142,13 +150,16 @@
             Name          = 'msx'
             FullName      = 'Microsoft MSX'
             RomExtensions = @('.rom', '.mx1', '.mx2', '.col', '.dsk', '.cas', '.m3u')
-            Notes         = 'MSX system BIOS ROMs (e.g., MSX2.ROM, MSX2P.ROM, DISK.ROM) must be supplied by the user and placed under RetroArch system directory.'
+            Notes         = 'Uses bluemsx core + C-BIOS (Apache-licensed open replacement BIOS). User can optionally drop original Microsoft MSX BIOS files in the RetroArch system dir for higher compatibility.'
             Launcher      = @{
                 Kind         = 'Libretro'
-                LibretroCore = 'fmsx_libretro.dll'
+                LibretroCore = 'bluemsx_libretro.dll'
             }
             Packages      = @('Libretro.RetroArch')
-            Artifacts     = @{ Core = 'fmsx-core' }
+            Artifacts     = @{
+                Core       = 'bluemsx-core'
+                SystemFile = 'cbios-msx'
+            }
         }
 
         # ---- Standalone emulators (M7) ----
@@ -184,7 +195,7 @@
             Name          = 'ps3'
             FullName      = 'Sony PlayStation 3'
             RomExtensions = @('.iso', '.pkg', '.bin', '.elf', '.self')
-            Notes         = 'RPCS3 not in winget; binary downloaded via Source=Manifest. BIOS / decryption keys must be supplied by the user.'
+            Notes         = 'RPCS3 not in winget; binary downloaded via Source=Manifest. Sony PS3 firmware (PS3UPDAT.PUP) auto-installed via rpcs3.exe --installfw — this is the only legal way to redistribute (we point at Sony''s URL, never host the firmware).'
             Launcher      = @{
                 Kind            = 'Standalone'
                 Source          = 'Manifest'
@@ -193,7 +204,10 @@
                 CommandTemplate = '"%EXE%" "%ROM%"'
             }
             Packages      = @()                       # empty — no winget install for Manifest-sourced systems
-            Artifacts     = @{ Emulator = 'rpcs3-binary' }
+            Artifacts     = @{
+                Emulator = 'rpcs3-binary'
+                Firmware = 'ps3-firmware'
+            }
         }
 
         # GC/Wii (Dolphin) entries removed 2026-05-23 — DolphinEmulator.Dolphin's winget manifest

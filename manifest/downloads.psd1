@@ -1,14 +1,25 @@
 @{
     SchemaVersion = 1
     Downloads = @{
+        'atari2600-halo' = @{
+            Url    = 'https://github.com/OpenEmu/OpenEmu-Update/raw/master/Homebrew/2600/Halo%202600/Halo2600_Final.a26'
+            Sha256 = 'ba093e70ca756cfb05b44165b2e8cabaf3834ee6ccba37e0293032a7ab02434f'
+            Kind   = 'Rom'
+            System = 'atari2600'
+        }
+        'bluemsx-core' = @{
+            Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/bluemsx_libretro.dll.zip'
+            Sha256 = '72a111ca95e84f23ce8cc4d1afded0acf314ee03839e81aee55ce6d84d55ca40'
+            Kind   = 'LibretroCore'
+        }
+        'cbios-msx' = @{
+            Url    = 'https://sourceforge.net/projects/cbios/files/cbios/0.30/cbios-0.30.zip/download'
+            Sha256 = '0000000000000000000000000000000000000000000000000000000000000000'
+            Kind   = 'SystemFile'
+        }
         'fceumm-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/fceumm_libretro.dll.zip'
             Sha256 = '93b58f5a0778a1680d181d9de3937daa44d18ffef600d00133533eb83ef2d9d8'
-            Kind   = 'LibretroCore'
-        }
-        'fmsx-core' = @{
-            Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/fmsx_libretro.dll.zip'
-            Sha256 = '5a7ab3b65baa07b1e4553e243eea7e9ec5db8f36cb81d648981588af39222510'
             Kind   = 'LibretroCore'
         }
         'gambatte-core' = @{
@@ -54,10 +65,21 @@
             Sha256 = '82d61c09c655770d8efe8228661986ad407024d023637c11f95d1fafd385c855'
             Kind   = 'LibretroCore'
         }
+        'ps3-firmware' = @{
+            Url    = 'https://dus01.ps3.update.playstation.net/update/ps3/image/us/2024_0207_8d3aab90a44a2bc8d0eb46e0bef2ac76/PS3UPDAT.PUP'
+            Sha256 = '0000000000000000000000000000000000000000000000000000000000000000'
+            Kind   = 'Firmware'
+        }
         'rpcs3-binary' = @{
             Url    = 'https://github.com/RPCS3/rpcs3-binaries-win/releases/download/build-67464f97df8679d5d540256987551f34fe00d4cc/rpcs3-v0.0.40-19389-67464f97_win64_msvc.7z'
             Sha256 = '49a71725ca5eff3265f643ac36dbaa0d3beacf144252795b58318a1cd1f222bf'
             Kind   = 'Emulator'
+        }
+        'sms-brucelee' = @{
+            Url    = 'https://github.com/OpenEmu/OpenEmu-Update/raw/master/Homebrew/SMS/Bruce%20Lee/BruceLee-SMS-1.00.sms'
+            Sha256 = '95ce932b5f458f85e093bc094db225221da439b9369dca75c28fef099dbf2877'
+            Kind   = 'Rom'
+            System = 'mastersystem'
         }
         'snes-nwarp' = @{
             Url    = 'https://github.com/OpenEmu/OpenEmu-Update/raw/master/Homebrew/SNES/N-Warp%20Daisakusen/N-Warp%20Daisakusen%20V1.1.smc'

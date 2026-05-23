@@ -45,7 +45,7 @@ function Resolve-Manifest {
         throw "downloads.psd1: missing required key 'Downloads'."
     }
 
-    $validDownloadKinds = @('LibretroCore', 'Rom', 'Theme', 'EmulatorAsset', 'Emulator')
+    $validDownloadKinds = @('LibretroCore', 'Rom', 'Theme', 'EmulatorAsset', 'Emulator', 'SystemFile', 'Firmware')
     $downloadIds = [System.Collections.Generic.HashSet[string]]::new()
     $downloadList = [System.Collections.Generic.List[DownloadSpec]]::new()
 

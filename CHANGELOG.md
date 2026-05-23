@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+### "Fix all BYO" — system BIOS + auto-firmware + more bundled homebrew
+- **Two new `DownloadKind` values**:
+  - `SystemFile` — extracted to `<retroarch>\system\`, where libretro cores look for BIOS files. Place-Artifact handles `.zip`/`.7z` extraction + bare-file copy.
+  - `Firmware` — passed to the emulator's CLI for installation rather than placed on disk by us. Currently used for RPCS3's `--installfw <pup>` flow.
+- **MSX now uses bluemsx core + C-BIOS** (Apache-licensed open-source BIOS) — previous fmsx core required user-supplied Microsoft BIOS files we can't redistribute. bluemsx accepts C-BIOS natively. C-BIOS shipped via SourceForge mirror redirect.
+- **Sony PS3 firmware auto-install** — `ps3-firmware` artifact downloads Sony's PUP from `dus01.ps3.update.playstation.net` (Sony hosts; we just reference their URL — never redistribute). After RPCS3 binary extracted, orchestrator invokes `rpcs3.exe --installfw <pup>` to install firmware silently.
+- **Two more bundled homebrew ROMs**:
+  - **Atari 2600**: Halo 2600 by Ed Fries (freeware, hosted by OpenEmu)
+  - **Master System**: Bruce Lee (homebrew port, hosted by OpenEmu)
+- **Artifact processing order** in `Install-EmulationStation` now sorts by Kind: `Emulator` first (sets `$launcherPaths` for Manifest-sourced systems), then `SystemFile`, then `Firmware` (needs the emulator binary resolved), then everything else. Previously hashtable iteration was undefined; this guarantees firmware install happens after rpcs3.exe is extracted.
+- **Hash pinning status** (3 of 5 new entries pinned at commit time):
+  - ✅ `atari2600-halo`, `bluemsx-core`, `sms-brucelee` pinned
+  - ⚠️ `cbios-msx`, `ps3-firmware` — placeholders; SourceForge and Sony's update server were SSL-flaky from this network during pinning. Maintainer re-runs `Update-DownloadHashes -Force` when reachable. Orchestrator aggregates failures and continues — install completes for the rest of the manifest.
+- 17 download entries total (was 15); 15 systems unchanged.
+- Tests: 115 unit pass.
+- End-to-end install on Windows 11 Pro: 15/15 systems landed, Atari 2600 + Master System ROMs in place, RPCS3 binary extracted. MSX core/BIOS and PS3 firmware pending network normalization for hash pin.
+
 ### MSX + PS3 added; new Launcher.Source = 'Manifest' for non-winget binaries
 - **MSX** (Microsoft MSX) — standard libretro entry, `fmsx_libretro.dll`. System BIOS ROMs (MSX2.ROM etc.) are BYO, documented in `Notes`.
 - **PS3** (Sony PlayStation 3) — re-added via new schema field `Launcher.Source = 'Manifest'`. Bypasses winget entirely; the emulator binary is downloaded as an Artifact (`Kind = 'Emulator'`) and extracted to `<InstallRoot>\emulators\<system>\`. RPCS3 build pinned to GitHub release `build-67464f97df8679d5d540256987551f34fe00d4cc` (`rpcs3-v0.0.40-19389-67464f97_win64_msvc.7z`, hash `49a71725…`); maintainer bumps URL + re-runs `Update-DownloadHashes` for newer builds.

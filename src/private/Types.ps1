@@ -15,6 +15,8 @@ enum DownloadKind {
     Theme
     EmulatorAsset
     Emulator         # An emulator binary (e.g., RPCS3 .7z) — extracted to <InstallRoot>\emulators\<system>\
+    SystemFile       # Libretro system files (e.g., C-BIOS for MSX) — extracted to <retroarch>\system\
+    Firmware         # Emulator firmware blob (e.g., PS3 PUP) — installed via emulator CLI, not placed on disk by us
 }
 
 class EmulatorSystem {

@@ -185,7 +185,18 @@ function Install-EmulationStation {
             New-Item -ItemType Directory -Path $romDir -Force | Out-Null
         }
 
-        foreach ($artifactKey in $system.Artifacts.Keys) {
+        # Order artifacts so Emulator runs first (sets launcherPaths for Source=Manifest systems),
+        # then SystemFile (libretro BIOS files), then Firmware (invokes emulator CLI), then everything else.
+        $artifactKeysSorted = $system.Artifacts.Keys | Sort-Object {
+            $k = $downloadsById[$system.Artifacts[$_]].Kind
+            switch ([string]$k) {
+                'Emulator'   { 0 }
+                'SystemFile' { 1 }
+                'Firmware'   { 2 }
+                default      { 3 }
+            }
+        }
+        foreach ($artifactKey in $artifactKeysSorted) {
             $downloadId = $system.Artifacts[$artifactKey]
             $download   = $downloadsById[$downloadId]
             if (-not $download) {
@@ -282,8 +293,57 @@ function Install-EmulationStation {
                         $sysSucceeded = $false
                     }
                 }
+                'SystemFile' {
+                    # Goes to RetroArch's system directory (alongside cores/, themes/ etc).
+                    # libretro cores look here for BIOS files.
+                    if (-not $launcherPaths.ContainsKey('Libretro.RetroArch')) {
+                        Write-Warning "  No RetroArch path; cannot place SystemFile $downloadId"
+                        continue
+                    }
+                    $raDir    = Split-Path -Parent $launcherPaths['Libretro.RetroArch']
+                    $sysDir   = Join-Path $raDir 'system'
+                    if (-not (Test-Path -LiteralPath $sysDir)) {
+                        New-Item -ItemType Directory -Path $sysDir -Force | Out-Null
+                    }
+                    try {
+                        if ($extension -in @('.zip', '.7z')) {
+                            Expand-VerifiedArchive -Path $cachePath -Destination $sysDir -Force
+                        } else {
+                            Copy-Item -LiteralPath $cachePath -Destination $sysDir -Force
+                        }
+                        Write-Host "    -> SystemFile placed in $sysDir"
+                    }
+                    catch {
+                        Write-Warning "  SystemFile placement failed: $($_.Exception.Message)"
+                        $failures.Add(@{ System = $system.Name; Step = "PlaceSystemFile:$downloadId"; Message = $_.Exception.Message })
+                    }
+                }
+                'Firmware' {
+                    # Installed via the emulator's CLI (e.g., rpcs3.exe --installfw).
+                    # Currently only RPCS3 is supported; generalize when we add another firmware-using emulator.
+                    $emuKey = $system.Launcher.PackageId
+                    if (-not $launcherPaths.ContainsKey($emuKey)) {
+                        Write-Warning "  No emulator path for $emuKey; cannot install firmware $downloadId"
+                        $failures.Add(@{ System = $system.Name; Step = "InstallFirmware:$downloadId"; Message = "$emuKey path not resolved" })
+                        continue
+                    }
+                    $emuExe = $launcherPaths[$emuKey]
+                    try {
+                        Write-Host "    Installing firmware via $emuExe --installfw $cachePath (may take a minute)"
+                        $p = Start-Process -FilePath $emuExe -ArgumentList @('--installfw', $cachePath) -Wait -NoNewWindow -PassThru
+                        if ($p.ExitCode -ne 0) {
+                            throw "$emuKey --installfw exited with code $($p.ExitCode)"
+                        }
+                        Write-Host "    -> Firmware installed via $emuKey"
+                        Log -Kind 'FirmwareInstalled' -Props @{ System = $system.Name; Emulator = $emuKey; Pup = $cachePath }
+                    }
+                    catch {
+                        Write-Warning "  Firmware install failed: $($_.Exception.Message)"
+                        $failures.Add(@{ System = $system.Name; Step = "InstallFirmware:$downloadId"; Message = $_.Exception.Message })
+                    }
+                }
                 default {
-                    Write-Host "  (Kind '$($download.Kind)' not handled in M5)"
+                    Write-Host "  (Kind '$($download.Kind)' not handled)"
                 }
             }
         }
