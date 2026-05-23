@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### MSX BIOS — `tests/fetch-cbios.ps1` helper installs C-BIOS into RetroArch system dir
+- New one-shot helper script `tests/fetch-cbios.ps1`. Downloads the openMSX 21.0 Windows binary bundle from GitHub (13 MB), extracts the C-BIOS `*.rom` files from its `share/systemroms/`, and copies them into `C:\RetroArch-Win64\system\` with the names fmsx expects: `MSX.ROM`, `MSX2.ROM`, `MSX2EXT.ROM`, `MSX2P.ROM`, `MSX2PEXT.ROM` (plus optional logo + music ROMs).
+- **Why openMSX bundle instead of standalone C-BIOS zip**: SourceForge's `cbios-0.30.zip` URL has been intermittently SSL-failing from this network all session — even when its HEAD returns 200, the `Invoke-WebRequest`/`curl` GET returns either an HTML mirror page or fails handshake. GitHub-hosted openMSX is reliable and ships the same C-BIOS files inside its bundle.
+- **openMSX naming quirks** (`+` instead of `p`, shared `cbios_sub.rom` between MSX2 and MSX2+) handled by the rename map; rename map also covers the standalone cbios-0.30.zip naming so the script works against either source.
+- Verified live: launched RetroArch + fmsx + `Castle Excellent.rom` headlessly; it loaded the content and ran (content_history written, no init errors).
+- Documented in `manifest/systems.psd1` MSX Notes.
+- Not wired into the auto-install orchestrator yet — it's a maintainer-run one-off because BIOS files need per-file rename mapping, which would require new manifest schema. Acceptable as a one-off helper for v0.1.
+
 ### Revert MSX to fmsx core; bluemsx swap was incorrect
 - **Symptom**: MSX ROMs imported by the user (e.g., Castle Excellent .rom) wouldn't run after the BYO fix. bluemsx_libretro.dll was on disk but the system\ dir was empty (cbios-msx SourceForge SSL kept failing).
 - **Real root cause**: my earlier "switch to bluemsx for C-BIOS compatibility" was **wrong**. bluemsx libretro doesn't accept bare C-BIOS files — it needs the full bluemsx-system tree (`Machines/<name>/config.xml` + ROM files per machine), which is not what cbios-0.30.zip provides. Even if the SourceForge SSL had cooperated, the resulting setup wouldn't have worked.
