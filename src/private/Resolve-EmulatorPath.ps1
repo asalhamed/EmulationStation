@@ -51,7 +51,34 @@ function Resolve-EmulatorPath {
             $nameMatches = $props.DisplayName -eq $displayName -or $props.DisplayName -like "*$displayName*"
             if (-not $nameMatches) { continue }
 
+            # Primary: InstallLocation field
             $loc = $props.InstallLocation
+
+            # Fallback 1: NSIS / installers that don't populate InstallLocation often DO populate
+            # UninstallString (or QuietUninstallString) pointing at <install-dir>\uninstall.exe.
+            # Derive the install dir from the parent of that path.
+            if (-not $loc -or -not (Test-Path -LiteralPath $loc)) {
+                $uninst = $props.UninstallString
+                if (-not $uninst) { $uninst = $props.QuietUninstallString }
+                if ($uninst) {
+                    # UninstallString can be quoted (e.g. "C:\Foo\uninstall.exe" /S) — strip quotes + arguments.
+                    $exePart = $uninst.Trim()
+                    if ($exePart.StartsWith('"')) {
+                        $exePart = $exePart.Substring(1, $exePart.IndexOf('"', 1) - 1)
+                    } else {
+                        # Split on first space to drop trailing args.
+                        $spaceIdx = $exePart.IndexOf(' ')
+                        if ($spaceIdx -gt 0) { $exePart = $exePart.Substring(0, $spaceIdx) }
+                    }
+                    if (Test-Path -LiteralPath $exePart -PathType Leaf) {
+                        $candidate = Split-Path -Parent $exePart
+                        if ($candidate -and (Test-Path -LiteralPath $candidate -PathType Container)) {
+                            $loc = $candidate
+                        }
+                    }
+                }
+            }
+
             if (-not $loc -or -not (Test-Path -LiteralPath $loc)) { continue }
 
             if ($ExecutableName) {

@@ -168,45 +168,11 @@
             Packages      = @('PCSX2Team.PCSX2')
             Artifacts     = @{}
         }
-        @{
-            Name          = 'ps3'
-            FullName      = 'Sony PlayStation 3'
-            RomExtensions = @('.iso', '.pkg', '.bin')
-            Notes         = 'BIOS / decryption keys must be supplied by the user.'
-            Launcher      = @{
-                Kind            = 'Standalone'
-                PackageId       = 'RPCS3.RPCS3'
-                ExecutableName  = 'rpcs3.exe'
-                CommandTemplate = '"%EXE%" "%ROM%"'
-            }
-            Packages      = @('RPCS3.RPCS3')
-            Artifacts     = @{}
-        }
-        @{
-            Name          = 'gc'
-            FullName      = 'Nintendo GameCube'
-            RomExtensions = @('.iso', '.gcm', '.gcz')
-            Launcher      = @{
-                Kind            = 'Standalone'
-                PackageId       = 'DolphinEmulator.Dolphin'
-                ExecutableName  = 'Dolphin.exe'
-                CommandTemplate = '"%EXE%" -b -e "%ROM%"'
-            }
-            Packages      = @('DolphinEmulator.Dolphin')
-            Artifacts     = @{}
-        }
-        @{
-            Name          = 'wii'
-            FullName      = 'Nintendo Wii'
-            RomExtensions = @('.iso', '.wad', '.wbfs')
-            Launcher      = @{
-                Kind            = 'Standalone'
-                PackageId       = 'DolphinEmulator.Dolphin'
-                ExecutableName  = 'Dolphin.exe'
-                CommandTemplate = '"%EXE%" -b -e "%ROM%"'
-            }
-            Packages      = @('DolphinEmulator.Dolphin')
-            Artifacts     = @{}
-        }
+        # PS3 (RPCS3) and GC/Wii (Dolphin) entries removed 2026-05-23 — winget upstream broken:
+        #   - RPCS3.RPCS3 is not in the public winget repo (no matches at all)
+        #   - DolphinEmulator.Dolphin manifest points at dl-mirror.dolphin-emu.org/5.0/dolphin-x64-5.0.exe
+        #     which returns HTTP 403 (mirror dropped the 2016 release).
+        # Restore both when winget manifests are fixed upstream. The schema and orchestrator support
+        # them unchanged — just paste the entries back.
     )
 }

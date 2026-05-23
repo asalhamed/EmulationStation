@@ -8,13 +8,16 @@ Describe 'Shipped manifest — smoke checks' {
         $script:Manifest = Get-EmulationStationManifest
     }
 
-    It 'has exactly 16 systems (11 libretro from M3+M6 + 5 Standalone from M7)' {
-        $script:Manifest.Systems.Count | Should -Be 16
+    It 'has exactly 13 systems (11 libretro from M3+M6 + 2 Standalone after pruning broken winget upstreams)' {
+        # PS3 (RPCS3.RPCS3 not in winget repo) and GC+Wii (DolphinEmulator.Dolphin's
+        # installer URL returns HTTP 403 — winget manifest points at a dead mirror)
+        # were removed 2026-05-23. Restore when winget manifests are fixed upstream.
+        $script:Manifest.Systems.Count | Should -Be 13
     }
 
-    It 'has exactly 5 Standalone systems with all required Launcher fields' {
+    It 'has exactly 2 Standalone systems with all required Launcher fields' {
         $standalones = @($script:Manifest.Systems | Where-Object { $_.Launcher.Kind -eq 'Standalone' })
-        $standalones.Count | Should -Be 5
+        $standalones.Count | Should -Be 2
         foreach ($s in $standalones) {
             $s.Launcher.PackageId       | Should -Not -BeNullOrEmpty -Because "system '$($s.Name)' missing PackageId"
             $s.Launcher.ExecutableName  | Should -Not -BeNullOrEmpty -Because "system '$($s.Name)' missing ExecutableName"

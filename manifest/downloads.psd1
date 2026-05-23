@@ -3,12 +3,12 @@
     Downloads = @{
         'fceumm-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/fceumm_libretro.dll.zip'
-            Sha256 = 'cb922d3910616f1016914a9dd1896eee6ceefd15d4b4d99176a4ec81b5f075b4'
+            Sha256 = '93b58f5a0778a1680d181d9de3937daa44d18ffef600d00133533eb83ef2d9d8'
             Kind   = 'LibretroCore'
         }
         'gambatte-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/gambatte_libretro.dll.zip'
-            Sha256 = '2291d6af4ac1ccea971adc1f93913ac69756e9de593070d14da54a9e042a1405'
+            Sha256 = 'ed4f9a18795a060970b849d48b3f537af8b1295dcd8e1b245825e04ae6582090'
             Kind   = 'LibretroCore'
         }
         'gba-uranus' = @{
@@ -19,7 +19,7 @@
         }
         'genesis-plus-gx-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/genesis_plus_gx_libretro.dll.zip'
-            Sha256 = 'a6721188da8dc32b5a5fb57ae25e89eee44e31bf065e55e13e66cd43e95ee0a0'
+            Sha256 = '1b9a2fab1b468f1eb6fc119a9fd0110103b1f17ebbe0d41f50759675d939ea7d'
             Kind   = 'LibretroCore'
         }
         'genesis-rickdangerous' = @{
@@ -30,12 +30,12 @@
         }
         'mame2010-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/mame2010_libretro.dll.zip'
-            Sha256 = 'caa3b2fc0e5ea683e133a245eb5639714d75adec99bc5319ef85a6d739c95eb5'
+            Sha256 = '855288fe89668c1d4c63a92398586298c85422953d4b3e25851c2fc2fccfb367'
             Kind   = 'LibretroCore'
         }
         'mgba-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/mgba_libretro.dll.zip'
-            Sha256 = 'e4e9f4646f3ce646c0280770e8dca2a9ec7fbcf10c4b7dd4723e0f2da4132a59'
+            Sha256 = '4230eb1f439d1cced502af903f35070967b1373bbe6b6f5d818f0071a8fa9e05'
             Kind   = 'LibretroCore'
         }
         'nes-assimilate' = @{
@@ -46,7 +46,7 @@
         }
         'parallel-n64-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/parallel_n64_libretro.dll.zip'
-            Sha256 = 'cdc12d00b038a02dda7ce03267cdba65d75fb2455dd72e0f36446f296503fd52'
+            Sha256 = '82d61c09c655770d8efe8228661986ad407024d023637c11f95d1fafd385c855'
             Kind   = 'LibretroCore'
         }
         'snes-nwarp' = @{
@@ -57,17 +57,17 @@
         }
         'snes9x-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/snes9x_libretro.dll.zip'
-            Sha256 = 'fcdf8e38c7df2c9db52983710fc0aa65fcba90ec731e839b6cdfa60bd4fbce8f'
+            Sha256 = 'ee5b3bad1d6fafe6070b526528d373894dc392d67d9b613ea58fd105da526fac'
             Kind   = 'LibretroCore'
         }
         'stella-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/stella_libretro.dll.zip'
-            Sha256 = '254ff1637e7b33df00e25f09c1422890e23e8da31bb1adf8ad95750da1ce4e40'
+            Sha256 = 'd6b84268cd633db352fa89dfd5b7f36e096233f7c2fb6d2554a6c0b2863b06c1'
             Kind   = 'LibretroCore'
         }
         'vice-x64-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/vice_x64_libretro.dll.zip'
-            Sha256 = '0000000000000000000000000000000000000000000000000000000000000000'
+            Sha256 = 'e68d1049028d221be439f3a3cf07028af059ee0223d58133dfcbbc4465a935e8'
             Kind   = 'LibretroCore'
         }
     }

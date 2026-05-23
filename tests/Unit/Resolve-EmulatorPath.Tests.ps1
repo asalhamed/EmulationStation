@@ -107,3 +107,84 @@ Describe 'Resolve-EmulatorPath — failures' {
         }
     }
 }
+
+Describe 'Resolve-EmulatorPath — UninstallString fallback' {
+    # Many NSIS-built installers (RetroArch is the canonical case) register an Uninstall key
+    # without populating InstallLocation. The fallback derives the install dir from the parent
+    # of UninstallString's exe.
+    It 'derives InstallLocation from UninstallString when InstallLocation is empty' {
+        $fakeRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("evrp-uninstr-" + [guid]::NewGuid().Guid.Substring(0,8))
+        New-Item -ItemType Directory -Path $fakeRoot -Force | Out-Null
+        $fakeUninstall = Join-Path $fakeRoot 'uninstall.exe'
+        Set-Content -LiteralPath $fakeUninstall -Value 'binary'
+        $fakeExe = Join-Path $fakeRoot 'foo.exe'
+        Set-Content -LiteralPath $fakeExe -Value 'binary'
+
+        try {
+            InModuleScope EmulationStationSetup -Parameters @{ U = $fakeUninstall; R = $fakeRoot } {
+                param($U, $R)
+                Mock Find-WinGetInstalledPackage {
+                    @{ Id = 'Foo.Bar'; DisplayName = 'Foo Bar'; Version = '1.0' }
+                }
+                Mock Test-Path { $true } -ParameterFilter { $Path -like 'HKLM:*' -or $LiteralPath -like 'HKLM:*' }
+                Mock Test-Path { $false } -ParameterFilter { $Path -like 'HKCU:*' -or $LiteralPath -like 'HKCU:*' }
+                Mock Test-Path { $true }
+                Mock Get-ChildItem {
+                    @([PSCustomObject]@{ PSPath = 'HKLM:\...\Foo' })
+                } -ParameterFilter { $LiteralPath -like 'HKLM:*' }
+                Mock Get-ChildItem { @() } -ParameterFilter { $LiteralPath -like 'HKCU:*' }
+                Mock Get-ItemProperty {
+                    [PSCustomObject]@{
+                        DisplayName     = 'Foo Bar'
+                        InstallLocation = ''              # <-- empty, simulating NSIS
+                        UninstallString = $U
+                    }
+                }
+
+                $result = Resolve-EmulatorPath -PackageId 'Foo.Bar' -ExecutableName 'foo.exe'
+                $result | Should -Be (Join-Path $R 'foo.exe')
+            }
+        }
+        finally {
+            Remove-Item -LiteralPath $fakeRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'handles a quoted UninstallString with trailing /S argument' {
+        $fakeRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("evrp-uninstr2-" + [guid]::NewGuid().Guid.Substring(0,8))
+        New-Item -ItemType Directory -Path $fakeRoot -Force | Out-Null
+        $fakeUninstall = Join-Path $fakeRoot 'uninstall.exe'
+        Set-Content -LiteralPath $fakeUninstall -Value 'binary'
+
+        $quotedUninst = '"' + $fakeUninstall + '" /S'
+
+        try {
+            InModuleScope EmulationStationSetup -Parameters @{ Q = $quotedUninst; R = $fakeRoot } {
+                param($Q, $R)
+                Mock Find-WinGetInstalledPackage {
+                    @{ Id = 'Foo.Bar'; DisplayName = 'Foo Bar'; Version = '1.0' }
+                }
+                Mock Test-Path { $true } -ParameterFilter { $Path -like 'HKLM:*' -or $LiteralPath -like 'HKLM:*' }
+                Mock Test-Path { $false } -ParameterFilter { $Path -like 'HKCU:*' -or $LiteralPath -like 'HKCU:*' }
+                Mock Test-Path { $true }
+                Mock Get-ChildItem {
+                    @([PSCustomObject]@{ PSPath = 'HKLM:\...\Foo' })
+                } -ParameterFilter { $LiteralPath -like 'HKLM:*' }
+                Mock Get-ChildItem { @() } -ParameterFilter { $LiteralPath -like 'HKCU:*' }
+                Mock Get-ItemProperty {
+                    [PSCustomObject]@{
+                        DisplayName     = 'Foo Bar'
+                        InstallLocation = $null
+                        UninstallString = $Q
+                    }
+                }
+
+                $result = Resolve-EmulatorPath -PackageId 'Foo.Bar'
+                $result | Should -Be $R
+            }
+        }
+        finally {
+            Remove-Item -LiteralPath $fakeRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}

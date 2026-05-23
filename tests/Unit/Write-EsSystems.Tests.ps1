@@ -35,6 +35,36 @@ Describe 'Write-EsSystems' {
         }
     }
 
+    It 'rendered command references cores dir SIBLING to retroarch.exe, not under InstallRoot' {
+        # Regression test for the path-mismatch bug found in real install 2026-05-23:
+        # Place-Artifact puts cores at Split-Path(-Parent retroarch.exe)\cores\, but the previous
+        # Build-LauncherCommand pointed them at $InstallRoot\systems\retroarch\cores\. RetroArch
+        # at runtime couldn't find them. This test pins the contract.
+        $out = Join-Path $script:TempRoot 'es_systems_paths.cfg'
+        $instRoot = Join-Path $script:TempRoot 'install-root-elsewhere'
+        $raDir = Join-Path $script:TempRoot 'retroarch-somewhere-else'
+        New-Item -ItemType Directory -Path $raDir -Force | Out-Null
+        $raExe = Join-Path $raDir 'retroarch.exe'
+
+        InModuleScope EmulationStationSetup -Parameters @{ Out = $out; IR = $instRoot; RaExe = $raExe; RaDir = $raDir } {
+            param($Out, $IR, $RaExe, $RaDir)
+            $sys = [EmulatorSystem]::new()
+            $sys.Name = 'nes'; $sys.FullName = 'NES'; $sys.Platform = 'nes'; $sys.Theme = 'nes'
+            $sys.RomExtensions = @('.nes')
+            $sys.Launcher = @{ Kind = 'Libretro'; LibretroCore = 'fceumm_libretro.dll' }
+            $sys.Packages = @(); $sys.Artifacts = @{}
+
+            Write-EsSystems -Systems @($sys) -InstallRoot $IR `
+                -OutputPath $Out -LauncherPaths @{ 'Libretro.RetroArch' = $RaExe }
+
+            $content = Get-Content -LiteralPath $Out -Raw
+            $expectedCore = Join-Path $RaDir 'cores\fceumm_libretro.dll'
+            $content | Should -Match ([regex]::Escape($expectedCore))
+            # InstallRoot should NOT appear in the core path
+            $content | Should -Not -Match ([regex]::Escape((Join-Path $IR 'systems\retroarch')))
+        }
+    }
+
     It 'renders a Standalone system with %EXE% substituted' {
         $out = Join-Path $script:TempRoot 'es_systems_psx.cfg'
         InModuleScope EmulationStationSetup -Parameters @{ Out = $out } {

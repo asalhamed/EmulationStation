@@ -96,8 +96,12 @@ function Build-LauncherCommand {
         if (-not $LauncherPaths.ContainsKey($raKey)) {
             throw "System '$($System.Name)' is Libretro but no path provided for '$raKey' in -LauncherPaths."
         }
-        $raExe   = $LauncherPaths[$raKey]
-        $coreDir = Join-Path $InstallRoot 'systems\retroarch\cores'
+        $raExe = $LauncherPaths[$raKey]
+
+        # Cores live next to retroarch.exe (RetroArch's default + what Place-Artifact actually does).
+        # The previous version hardcoded $InstallRoot\systems\retroarch\cores which matched the upstream
+        # convention but NOT where we actually drop core DLLs — so RetroArch couldn't find them.
+        $coreDir = Join-Path (Split-Path -Parent $raExe) 'cores'
         $core    = Join-Path $coreDir $System.Launcher.LibretroCore
         return "`"$raExe`" -L `"$core`" %ROM%"
     }

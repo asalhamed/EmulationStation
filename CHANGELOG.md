@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Fixes from first real end-to-end install
+- **`Resolve-EmulatorPath`** — fall back to `UninstallString` (or `QuietUninstallString`) when the registry entry's `InstallLocation` is empty. NSIS installers (`Libretro.RetroArch` is the canonical case — installs to `C:\RetroArch-Win64\` but the install key doesn't populate `InstallLocation`) now resolve correctly. Quoted paths with trailing arguments (`"C:\...\uninstall.exe" /S`) handled. Adds 2 unit tests.
+- **`Write-EsSystems`** — derive the cores directory from `Split-Path -Parent <retroarch.exe>` instead of `$InstallRoot\systems\retroarch\cores\`. Previously the rendered `<command>` pointed at a directory `Place-Artifact` never wrote to, so RetroArch would launch but fail to load the core at runtime. Regression test pins the contract: cores dir must be a sibling of `retroarch.exe`, never under `$InstallRoot`.
+- **`manifest/systems.psd1`** — removed PS3 (RPCS3) and GC/Wii (Dolphin) entries. `RPCS3.RPCS3` is not in the public winget repo (no matches at all). `DolphinEmulator.Dolphin`'s installer URL points at `dl-mirror.dolphin-emu.org/5.0/dolphin-x64-5.0.exe` which returns HTTP 403 (2016 mirror dropped). Schema + orchestrator unchanged — paste entries back when winget is fixed upstream. System count: 16 → 13 (11 Libretro + 2 Standalone).
+- **`manifest/downloads.psd1`** — all 13 hashes pinned to current libretro nightly (`vice-x64-core` was last placeholder).
+- **Tests** — 111 unit pass (was 108): +2 `Resolve-EmulatorPath` (UninstallString fallback paths), +1 `Write-EsSystems` (core-path regression).
+
+End-to-end install verified on Windows 11 Pro: 13 systems installed, 9 cores extracted to `C:\RetroArch-Win64\cores\`, 4 homebrew ROMs placed, `es_systems.cfg` written with correct paths. Re-run idempotent in 35 seconds (winget packages skip as AlreadyInstalled, ROM cache hits).
+
 ## v0.1.0 — 2026-05-19
 
 First public cut. All 11 planned milestones (M0–M10) shipped; all 24 defects from `reference/analysis.md` addressed. 108 unit tests, 115 default suite, 117 with `-IncludeNetwork`. 16 systems supported (11 Libretro + 5 Standalone). Install + uninstall are both auditable round-trips.
