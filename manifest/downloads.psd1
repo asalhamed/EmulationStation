@@ -12,6 +12,11 @@
             Sha256 = '93b58f5a0778a1680d181d9de3937daa44d18ffef600d00133533eb83ef2d9d8'
             Kind   = 'LibretroCore'
         }
+        'fmsx-core' = @{
+            Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/fmsx_libretro.dll.zip'
+            Sha256 = 'ae5f1ee8b6ed6fdb462fe39c4d36a632c36c12c3638c6afa38784d74f211190a'
+            Kind   = 'LibretroCore'
+        }
         'gambatte-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/gambatte_libretro.dll.zip'
             Sha256 = 'ed4f9a18795a060970b849d48b3f537af8b1295dcd8e1b245825e04ae6582090'
@@ -61,23 +66,18 @@
             Sha256 = '4230eb1f439d1cced502af903f35070967b1373bbe6b6f5d818f0071a8fa9e05'
             Kind   = 'LibretroCore'
         }
+        'msx-bios' = @{
+            # Repo-bundled MSX BIOS pack: C-BIOS + Microsoft MSX-DOS2/KANJI/FMPAC/PAINTER ROMs.
+            # LocalPath bypasses the network — orchestrator copies from repo and hash-verifies.
+            LocalPath = 'assets/msx-bios.zip'
+            Sha256    = '0679bb9aff8d2462b9519aa45da8618bd151c3995ae494ddc9b43989b77611bf'
+            Kind      = 'SystemFile'
+        }
         'nes-assimilate' = @{
             Url    = 'https://www.nesworld.com/homebrew/assimilate_full.zip'
             Sha256 = '529f8d74456c38a21a6146882465b341ccb082d25d6500a31f29ad3bd5294786'
             Kind   = 'Rom'
             System = 'nes'
-        }
-        'fmsx-core' = @{
-            Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/fmsx_libretro.dll.zip'
-            Sha256 = '0000000000000000000000000000000000000000000000000000000000000000'
-            Kind   = 'LibretroCore'
-        }
-        'msx-bios' = @{
-            # Repo-bundled MSX BIOS pack: C-BIOS (Apache) + Microsoft MSX-DOS2/KANJI/FMPAC/PAINTER ROMs.
-            # LocalPath bypasses the network — orchestrator copies from repo and hash-verifies.
-            LocalPath = 'assets/msx-bios.zip'
-            Sha256    = '0679bb9aff8d2462b9519aa45da8618bd151c3995ae494ddc9b43989b77611bf'
-            Kind      = 'SystemFile'
         }
         'parallel-n64-core' = @{
             Url    = 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/parallel_n64_libretro.dll.zip'

@@ -45,6 +45,14 @@ function Update-DownloadHashes {
     $updated = @{}
     foreach ($key in $raw.Downloads.Keys) {
         $entry = $raw.Downloads[$key]
+
+        # LocalPath entries are repo-bundled assets; never refetch over the network. Keep as-is.
+        if ($entry.LocalPath) {
+            Write-Host "LOCAL $key (LocalPath bundle, not fetched)"
+            $updated[$key] = $entry
+            continue
+        }
+
         $needsRefresh = $Force -or ($entry.Sha256 -eq $placeholder) -or -not $entry.Sha256
         if (-not $needsRefresh) {
             Write-Host "SKIP  $key (already pinned: $($entry.Sha256.Substring(0,12))..)"
@@ -81,11 +89,19 @@ function Update-DownloadHashes {
     foreach ($key in ($updated.Keys | Sort-Object)) {
         $d = $updated[$key]
         $output += "        '$key' = @{`n"
-        $output += "            Url    = '$($d.Url)'`n"
+        # Exactly one of Url / LocalPath. Write whichever is set, skip empty.
+        if ($d.LocalPath) {
+            $output += "            LocalPath = '$($d.LocalPath)'`n"
+        } elseif ($d.Url) {
+            $output += "            Url    = '$($d.Url)'`n"
+        }
         $output += "            Sha256 = '$($d.Sha256)'`n"
         $output += "            Kind   = '$($d.Kind)'`n"
         if ($d.System) {
             $output += "            System = '$($d.System)'`n"
+        }
+        if ($d.KeepArchive) {
+            $output += "            KeepArchive = `$true`n"
         }
         $output += "        }`n"
     }
